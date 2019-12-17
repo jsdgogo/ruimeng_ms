@@ -33,18 +33,18 @@ public class UserController {
      * @Description: 登录
      */
     @PostMapping("login")
-    public Result login(String loginName, String password) {
+    public Result login(@RequestBody User user1) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("loginName", loginName).eq("password", password);
+        queryWrapper.eq("loginName", user1.getLoginName()).eq("password", user1.getPassword());
         User user = userService.getOne(queryWrapper);
         if (user != null) {
             String token = UUID.randomUUID().toString();
             user.setToken(token);
-            if (userService.saveOrUpdate(user)) {
+            if (userService.updateById(user)) {
                 return Result.ok().data("token", token);
             }
         }
-        return Result.error();
+        return Result.error().message("账号或密码错误");
     }
 
     /*private String createCookie(HttpServletResponse response) {
@@ -64,23 +64,21 @@ public class UserController {
      */
     @GetMapping("info")
     public Result info(HttpServletRequest request) {
-        User user = getByCookie(request);
+        User user = getByToken(request);
         if (user != null) {
             return Result.ok().data("user", user);
         }
         return Result.error();
     }
 
-    private User getByCookie(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals("token")) {
+    private User getByToken(HttpServletRequest request) {
+        String token = request.getHeader("token");
+            if (StringUtils.isNotBlank(token)) {
                 QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("token", cookie.getValue());
+                queryWrapper.eq("token", token);
                 User user = userService.getOne(queryWrapper);
                 return user;
-            }
-        }
+           }
         return null;
     }
 
@@ -91,7 +89,7 @@ public class UserController {
      */
     @PostMapping("logout")
     public Result logout(HttpServletRequest request) {
-        User user = getByCookie(request);
+        User user = getByToken(request);
         user.setToken(null);
         userService.updateById(user);
         return Result.ok();
@@ -106,7 +104,7 @@ public class UserController {
      */
     @PostMapping("update")
     public Result update(String password, String loginName,HttpServletRequest request) {
-        User user = getByCookie(request);
+        User user = getByToken(request);
         if (StringUtils.isNotBlank(loginName)){
             user.setLoginName(loginName);
         }
