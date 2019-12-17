@@ -9,7 +9,7 @@ public class DateUtil {
      * @Title: stringToDate
      * @Description: 字符串转date
      * @param time 时间字符串
-     * @throws ParseException 简单描述
+     * @throws ParseException 转换异常
      * @return Date 时间
      */
     public static Date stringToDate(String time) throws ParseException {
