@@ -29,4 +29,5 @@ public class User implements Serializable {
     private int level;//级别
     private Date createTime; //创建时间
     private Date updateTime; //修改时间
+    private String token; //令牌
 }

@@ -13,4 +13,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface OrderService extends IService<Order> {
 
+    boolean deleteById(int id);
+
+    boolean add(Order order);
 }

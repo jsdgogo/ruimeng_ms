@@ -49,5 +49,9 @@ public class CustomerEmptyBottle implements Serializable {
     @TableField("updateTime")
     private Date updateTime; //修改时间
 
+    public static final int STATUS_YES = 1; // 已还清
+    public static final int STATUS_NO = 0; // 未还清
+
+    private Integer status; //是否还完
 
 }
