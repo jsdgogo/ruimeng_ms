@@ -33,12 +33,12 @@ public class UserController {
      * @Description: 登录
      */
     @PostMapping("login")
-    public Result login(String loginName, String password, HttpServletResponse response) {
+    public Result login(String loginName, String password) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("loginName", loginName).eq("password", password);
         User user = userService.getOne(queryWrapper);
         if (user != null) {
-            String token = createCookie(response);
+            String token = UUID.randomUUID().toString();
             user.setToken(token);
             if (userService.saveOrUpdate(user)) {
                 return Result.ok().data("token", token);
@@ -47,7 +47,7 @@ public class UserController {
         return Result.error();
     }
 
-    private String createCookie(HttpServletResponse response) {
+    /*private String createCookie(HttpServletResponse response) {
         String token = UUID.randomUUID().toString();
         Cookie cookie = new Cookie("uidx", token);
         cookie.setHttpOnly(true);
@@ -55,7 +55,7 @@ public class UserController {
         cookie.setPath("/");
         response.addCookie(cookie);
         return token;
-    }
+    }*/
 
     /**
      * @return Result 返回类型
@@ -74,7 +74,7 @@ public class UserController {
     private User getByCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         for (Cookie cookie : cookies) {
-            if (cookie.getName().equals("uidx")) {
+            if (cookie.getName().equals("token")) {
                 QueryWrapper<User> queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("token", cookie.getValue());
                 User user = userService.getOne(queryWrapper);
