@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.ruimeng</groupId>
-    <artifactId>ms</artifactId>
+    <artifactId>ruimeng_ms</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>ms</name>
     <description>Demo project for Spring Boot</description>
