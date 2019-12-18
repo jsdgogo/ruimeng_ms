@@ -11,7 +11,7 @@ import lombok.Getter;
 public enum ResultCodeEnum {
 
     SUCCESS(true, 0,"成功"),
-    NO_USER_ERROR(false, 1001, "未登录,请跳转首页登录"),
+    NO_USER_ERROR(false, 1001, "未登录,请跳转登录页重新登录"),
     UNKNOWN_REASON(false, 1, "未知错误"),
     BAD_SQL_GRAMMAR(false, 10001, "sql语法错误"),
     JSON_PARSE_ERROR(false, 10002, "json解析异常"),

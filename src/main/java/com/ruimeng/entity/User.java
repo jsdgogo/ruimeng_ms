@@ -33,5 +33,4 @@ public class User implements Serializable {
     private Date createTime; //创建时间
     @TableField("updateTime")
     private Date updateTime; //修改时间
-    private String token; //令牌
 }

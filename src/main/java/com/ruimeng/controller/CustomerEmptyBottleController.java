@@ -24,13 +24,14 @@ import java.util.Date;
  */
 @RestController
 @RequestMapping("customerEmptyBottle")
+@CrossOrigin
 public class CustomerEmptyBottleController {
 
     @Autowired
     private CustomerEmptyBottleService customerEmptyBottleService;
 
     @PostMapping("save")
-    public Result save(@RequestBody CustomerEmptyBottle customerEmptyBottle) {
+    public Result save(CustomerEmptyBottle customerEmptyBottle) {
         customerEmptyBottle.setCreateTime(new Date());
         customerEmptyBottle.setUpdateTime(new Date());
         if (customerEmptyBottleService.save(customerEmptyBottle)) {
@@ -48,7 +49,7 @@ public class CustomerEmptyBottleController {
     }
 
     @PostMapping("update")
-    public Result update(@RequestBody CustomerEmptyBottle customerEmptyBottle) {
+    public Result update(CustomerEmptyBottle customerEmptyBottle) {
         customerEmptyBottle.setUpdateTime(new Date());
         if (customerEmptyBottleService.updateById(customerEmptyBottle)) {
             return Result.ok();
@@ -57,7 +58,7 @@ public class CustomerEmptyBottleController {
     }
 
     @PostMapping("findByPage")
-    public Result findByPage(@RequestBody PageParam pageParam) {
+    public Result findByPage(PageParam pageParam) {
         QueryWrapper<CustomerEmptyBottle> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(pageParam.getSearch())) {
             queryWrapper.like("search", pageParam.getSearch());

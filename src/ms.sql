@@ -11,7 +11,7 @@
  Target Server Version : 50723
  File Encoding         : 65001
 
- Date: 17/12/2019 23:42:39
+ Date: 19/12/2019 01:09:19
 */
 
 SET NAMES utf8mb4;
@@ -37,9 +37,6 @@ CREATE TABLE `customer`  (
 -- ----------------------------
 -- Records of customer
 -- ----------------------------
-INSERT INTO `customer` VALUES (1, '武庚武庚武庚武庚武庚武庚', '四川省成都市武侯区永盛南街爱家馨城3栋3单元7楼30号', '15181077298', '123456', '阿狗', '2019-12-10 20:20:57', '2019-12-10 20:20:59', DEFAULT);
-INSERT INTO `customer` VALUES (2, '白菜', '商国', '10081', '1234567', '小白菜', '2019-12-10 20:21:33', '2019-12-10 20:21:37', DEFAULT);
-INSERT INTO `customer` VALUES (7, '武庚', '商国', '10086', '123456', '思思', '2019-12-10 20:20:57', '2019-12-10 20:20:59', DEFAULT);
 INSERT INTO `customer` VALUES (8, '撒甲方', '商国', '10086', '123456', '思思', '2019-12-10 20:20:57', '2019-12-10 20:20:59', DEFAULT);
 INSERT INTO `customer` VALUES (9, '撒经济', '商国', '10086', '123456', '思思', '2019-12-10 20:20:57', '2019-12-10 20:20:59', DEFAULT);
 INSERT INTO `customer` VALUES (11, '撒甲方', '商国', '10086', '123456', '狗思思', '2019-12-10 20:20:57', '2019-12-10 20:20:59', DEFAULT);
@@ -186,14 +183,13 @@ CREATE TABLE `user`  (
   `level` int(11) NULL DEFAULT NULL,
   `createTime` datetime(0) NULL DEFAULT NULL,
   `updateTime` datetime(0) NULL DEFAULT NULL,
-  `token` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of user
 -- ----------------------------
-INSERT INTO `user` VALUES (1, '管理员', 'admin', '123456', 1, '2019-12-09 20:38:36', '2019-12-09 20:38:39', '78bfad18-ae48-49a8-b277-ebe782fa7e86');
+INSERT INTO `user` VALUES (1, '管理员', 'admin', '123456', 1, '2019-12-09 20:38:36', '2019-12-09 20:38:39');
 
 -- ----------------------------
 -- Table structure for word_lib

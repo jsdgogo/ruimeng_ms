@@ -30,7 +30,7 @@ public class StaffController {
     private StaffService staffService;
 
     @PostMapping("save")
-    public Result save(@RequestBody Staff staff) {
+    public Result save(Staff staff) {
         staff.setCreateTime(new Date());
         staff.setUpdateTime(new Date());
         if (staffService.save(staff))  {
@@ -47,7 +47,7 @@ public class StaffController {
         return Result.error();
     }
     @PostMapping("update")
-    public Result update(@RequestBody Staff staff) {
+    public Result update(Staff staff) {
         staff.setUpdateTime(new Date());
         if(staffService.updateById(staff)){
             return Result.ok();
@@ -56,7 +56,7 @@ public class StaffController {
     }
 
     @PostMapping("findByPage")
-    public Result findByPage(@RequestBody PageParam pageParam ) {
+    public Result findByPage(PageParam pageParam ) {
         QueryWrapper<Staff> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(pageParam.getSearch())){
             queryWrapper.like("search",pageParam.getSearch());
