@@ -8,9 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.UUID;
 
 /**
@@ -73,12 +71,12 @@ public class UserController {
 
     private User getByToken(HttpServletRequest request) {
         String token = request.getHeader("token");
-            if (StringUtils.isNotBlank(token)) {
-                QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("token", token);
-                User user = userService.getOne(queryWrapper);
-                return user;
-           }
+        if (StringUtils.isNotBlank(token)) {
+            QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("token", token);
+            User user = userService.getOne(queryWrapper);
+            return user;
+        }
         return null;
     }
 
@@ -96,19 +94,19 @@ public class UserController {
     }
 
     /**
-     * @Description 修改用户名密码
-     * @param password 密码
+     * @param password  密码
      * @param loginName 登录名
-     * @param request 请求
+     * @param request   请求
      * @return Result 结果
+     * @Description 修改用户名密码
      */
     @PostMapping("update")
-    public Result update(String password, String loginName,HttpServletRequest request) {
+    public Result update(String password, String loginName, HttpServletRequest request) {
         User user = getByToken(request);
-        if (StringUtils.isNotBlank(loginName)){
+        if (StringUtils.isNotBlank(loginName)) {
             user.setLoginName(loginName);
         }
-        if(StringUtils.isNotBlank(password)){
+        if (StringUtils.isNotBlank(password)) {
             user.setPassword(password);
         }
         userService.updateById(user);
