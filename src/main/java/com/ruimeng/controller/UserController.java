@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruimeng.entity.User;
 import com.ruimeng.service.UserService;
 import com.ruimeng.vo.Result;
+import com.ruimeng.vo.ResultCodeEnum;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -111,5 +112,10 @@ public class UserController {
         }
         userService.updateById(user);
         return Result.ok();
+    }
+
+    @PostMapping("toIndex")
+    public Result toIndex(){
+        return Result.setResult(ResultCodeEnum.NO_USER_ERROR);
     }
 }

@@ -1,6 +1,11 @@
 package com.ruimeng.interceptor;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruimeng.entity.User;
+import com.ruimeng.service.UserService;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -10,24 +15,38 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Component
+@Slf4j
 public class UserInterceptor implements HandlerInterceptor {
 
+    @Autowired
+    private UserService userService;
     /*
      * 进入controller层之前拦截请求
-     * 返回值：表示是否将当前的请求拦截下来  false：拦截请求，请求别终止。true：请求不被拦截，继续执行
+     * 返回值：表示是否将当前的请求拦截下来  false：拦截请求，请求被终止。true：请求不被拦截，继续执行
      * Object obj:表示被拦的请求的目标对象（controller中方法）
      */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
-        System.out.println("执行到了preHandle方法");
-        User user = (User) request.getSession().getAttribute("session_user");
+        log.info("{}","执行到了preHandle方法");
+        User user = getByToken(request);
         if (user==null){
             response.sendRedirect(request.getContextPath()+"/user/toIndex");//拦截后跳转的方法
-            System.out.println("已成功拦截并转发跳转");
+            log.info("{}","已成功拦截并转发跳转");
             return false;
         }
-        System.out.println("合格不需要拦截，放行");
+        log.info("{}","合格不需要拦截，放行");
         return true;
+    }
+
+    private User getByToken(HttpServletRequest request) {
+        String token = request.getHeader("token");
+        if (StringUtils.isNotBlank(token)) {
+            QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("token", token);
+            User user = userService.getOne(queryWrapper);
+            return user;
+        }
+        return null;
     }
 
     /*
@@ -36,7 +55,7 @@ public class UserInterceptor implements HandlerInterceptor {
      */
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
-        System.out.println("执行了postHandle方法");
+        log.info("{}","执行了postHandle方法");
     }
 
     /*
@@ -44,6 +63,6 @@ public class UserInterceptor implements HandlerInterceptor {
      */
     @Override
     public void afterCompletion(HttpServletRequest arg0, HttpServletResponse arg1, Object arg2, Exception arg3) throws Exception {
-        System.out.println("执行到了afterCompletion方法");
+        log.info("{}","执行到了afterCompletion方法");
     }
 }
