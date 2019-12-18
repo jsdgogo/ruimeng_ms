@@ -26,7 +26,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
      */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new LogInterceptor()).addPathPatterns("/**");
+        registry.addInterceptor(new LogInterceptor()).addPathPatterns("/**").excludePathPatterns("/user/login");
     }
     /**
      * 定义拦截器
@@ -38,6 +38,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
         @Override
         public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object o) throws Exception {
             log.info("执行到了preHandle方法");
+            crossDomain(request,response);
             User user = getByToken(request);
             if (user==null){
                 response.sendRedirect(request.getContextPath()+"/user/toIndex");//拦截后跳转的方法
@@ -72,5 +73,13 @@ public class InterceptorConfig implements WebMvcConfigurer {
         public void afterCompletion(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, Exception e) throws Exception {
             log.info("执行到了afterCompletion方法");
         }
+        /**
+         * 跨域处理
+         */
+        public void crossDomain(HttpServletRequest request, HttpServletResponse response) {
+            response.setHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
+            response.setHeader("Access-Control-Allow-Credentials", "true");
+        }
     }
+
 }

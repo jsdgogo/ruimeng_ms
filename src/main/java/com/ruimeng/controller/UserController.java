@@ -32,9 +32,9 @@ public class UserController {
      * @Description: 登录
      */
     @PostMapping("login")
-    public Result login(@RequestBody User user1) {
+    public Result login(String loginName,String password) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("loginName", user1.getLoginName()).eq("password", user1.getPassword());
+        queryWrapper.eq("loginName", loginName).eq("password", password);
         User user = userService.getOne(queryWrapper);
         if (user != null) {
             String token = UUID.randomUUID().toString();
