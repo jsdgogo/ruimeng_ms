@@ -1,4 +1,4 @@
-package com.ruimeng.interceptor;
+package com.ruimeng.config;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruimeng.entity.User;
