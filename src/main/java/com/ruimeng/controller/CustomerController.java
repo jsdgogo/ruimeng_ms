@@ -32,7 +32,7 @@ public class CustomerController {
     private CustomerService customerService;
 
     @PostMapping("save")
-    public Result save(@RequestBody Customer customer) {
+    public Result save(Customer customer) {
         customer.setCreateTime(new Date());
         customer.setUpdateTime(new Date());
        if (customerService.save(customer))  {
@@ -49,7 +49,7 @@ public class CustomerController {
         return Result.error();
     }
     @PostMapping("update")
-    public Result update(@RequestBody Customer customer) {
+    public Result update(Customer customer) {
         customer.setUpdateTime(new Date());
         if(customerService.updateById(customer)){
             return Result.ok();
@@ -58,7 +58,7 @@ public class CustomerController {
     }
 
     @PostMapping("findByPage")
-    public Result findByPage(@RequestBody PageParam pageParam ) {
+    public Result findByPage(PageParam pageParam ) {
         QueryWrapper<Customer> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(pageParam.getSearch())){
             queryWrapper.like("search",pageParam.getSearch());

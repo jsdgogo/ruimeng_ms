@@ -30,7 +30,7 @@ public class EmptyBottleController {
     private EmptyBottleService emptyBottleService;
 
     @PostMapping("save")
-    public Result save(@RequestBody EmptyBottle emptyBottle) {
+    public Result save(EmptyBottle emptyBottle) {
         emptyBottle.setCreateTime(new Date());
         emptyBottle.setUpdateTime(new Date());
         if (emptyBottleService.save(emptyBottle))  {
@@ -47,7 +47,7 @@ public class EmptyBottleController {
         return Result.error();
     }
     @PostMapping("update")
-    public Result update(@RequestBody EmptyBottle emptyBottle) {
+    public Result update(EmptyBottle emptyBottle) {
         emptyBottle.setUpdateTime(new Date());
         if(emptyBottleService.updateById(emptyBottle)){
             return Result.ok();
@@ -56,7 +56,7 @@ public class EmptyBottleController {
     }
 
     @PostMapping("findByPage")
-    public Result findByPage(@RequestBody PageParam pageParam ) {
+    public Result findByPage(PageParam pageParam ) {
         QueryWrapper<EmptyBottle> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(pageParam.getSearch())){
             queryWrapper.like("search",pageParam.getSearch());

@@ -37,11 +37,8 @@ public class UserController {
         queryWrapper.eq("loginName", loginName).eq("password", password);
         User user = userService.getOne(queryWrapper);
         if (user != null) {
-            String token = UUID.randomUUID().toString();
-            user.setToken(token);
-            if (userService.updateById(user)) {
-                return Result.ok().data("token", token);
-            }
+            String token = user.getLoginName();
+            return Result.ok().data("token", token);
         }
         return Result.error().message("账号或密码错误");
     }
@@ -74,7 +71,7 @@ public class UserController {
         String token = request.getHeader("token");
         if (StringUtils.isNotBlank(token)) {
             QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("token", token);
+            queryWrapper.eq("loginName", token);
             User user = userService.getOne(queryWrapper);
             return user;
         }
@@ -87,10 +84,7 @@ public class UserController {
      * @Description: 退出登录
      */
     @PostMapping("logout")
-    public Result logout(HttpServletRequest request) {
-        User user = getByToken(request);
-        user.setToken(null);
-        userService.updateById(user);
+    public Result logout() {
         return Result.ok();
     }
 
@@ -114,7 +108,7 @@ public class UserController {
         return Result.ok();
     }
 
-    @PostMapping("toIndex")
+    @GetMapping("toIndex")
     public Result toIndex(){
         return Result.setResult(ResultCodeEnum.NO_USER_ERROR);
     }

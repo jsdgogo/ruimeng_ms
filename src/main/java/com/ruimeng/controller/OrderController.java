@@ -35,7 +35,7 @@ public class OrderController {
     private OrderService orderService;
 
     @PostMapping("save")
-    public Result save(@RequestBody Order order) {
+    public Result save(Order order) {
         if (orderService.add(order))  {
             return Result.ok();
         }
@@ -51,7 +51,7 @@ public class OrderController {
         return Result.error();
     }
     @PostMapping("update")
-    public Result update(@RequestBody Order order) {
+    public Result update(Order order) {
         order.setUpdateTime(new Date());
         if(orderService.updateById(order)){
             return Result.ok();
@@ -60,7 +60,7 @@ public class OrderController {
     }
 
     @PostMapping("findByPage")
-    public Result findByPage(@RequestBody PageParam pageParam,String startTime,String endTime) throws ParseException {
+    public Result findByPage(PageParam pageParam,String startTime,String endTime) throws ParseException {
         QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(pageParam.getSearch())){
             queryWrapper.like("search",pageParam.getSearch());

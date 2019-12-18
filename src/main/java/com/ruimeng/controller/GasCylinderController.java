@@ -31,7 +31,7 @@ public class GasCylinderController {
     private GasCylinderService gasCylinderService;
 
     @PostMapping("save")
-    public Result save(@RequestBody GasCylinder gasCylinder) {
+    public Result save(GasCylinder gasCylinder) {
         gasCylinder.setCreateTime(new Date());
         gasCylinder.setUpdateTime(new Date());
         if (gasCylinderService.save(gasCylinder))  {
@@ -49,7 +49,7 @@ public class GasCylinderController {
         return Result.error();
     }
     @PostMapping("update")
-    public Result update(@RequestBody GasCylinder gasCylinder) {
+    public Result update(GasCylinder gasCylinder) {
         gasCylinder.setUpdateTime(new Date());
         if(gasCylinderService.updateById(gasCylinder)){
             return Result.ok();
@@ -58,7 +58,7 @@ public class GasCylinderController {
     }
 
     @PostMapping("findByPage")
-    public Result findByPage(@RequestBody PageParam pageParam ) {
+    public Result findByPage(PageParam pageParam ) {
         QueryWrapper<GasCylinder> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(pageParam.getSearch())){
             queryWrapper.like("search",pageParam.getSearch());
