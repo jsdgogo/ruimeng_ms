@@ -1,6 +1,7 @@
 package com.ruimeng.controller;
 
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.bind.annotation.RestController;
@@ -14,7 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2019-11-27
  */
 @RestController
-@RequestMapping("/order-item")
+@RequestMapping("orderItem")
+@CrossOrigin
 public class OrderItemController {
 
 }

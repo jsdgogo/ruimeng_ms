@@ -32,7 +32,7 @@ public class UserController {
      * @Description: 登录
      */
     @PostMapping("login")
-    public Result login(String loginName,String password) {
+    public Result login(String loginName, String password) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("loginName", loginName).eq("password", password);
         User user = userService.getOne(queryWrapper);
@@ -108,8 +108,4 @@ public class UserController {
         return Result.ok();
     }
 
-    @GetMapping("toIndex")
-    public Result toIndex(){
-        return Result.setResult(ResultCodeEnum.NO_USER_ERROR);
-    }
 }

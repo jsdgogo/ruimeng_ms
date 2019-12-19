@@ -34,7 +34,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
      */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new LogInterceptor()).addPathPatterns("/**").excludePathPatterns("/user/login").excludePathPatterns("/user/info");
+        registry.addInterceptor(new LogInterceptor()).addPathPatterns("/**").excludePathPatterns("/user/login");
     }
 
     /**
@@ -46,7 +46,6 @@ public class InterceptorConfig implements WebMvcConfigurer {
          */
         @Override
         public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object o) throws Exception {
-            log.info("执行到了preHandle方法");
             if (request.getMethod().equals(RequestMethod.OPTIONS.name())) {
                 return true;
             }
@@ -58,7 +57,6 @@ public class InterceptorConfig implements WebMvcConfigurer {
                 log.info("已成功拦截并转发跳转");
                 return false;
             }
-            log.info("不需要拦截，放行");
             return true;
         }
 
@@ -78,7 +76,6 @@ public class InterceptorConfig implements WebMvcConfigurer {
          */
         @Override
         public void postHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, ModelAndView modelAndView) throws Exception {
-            log.info("执行了postHandle方法");
         }
 
         /**
@@ -86,7 +83,6 @@ public class InterceptorConfig implements WebMvcConfigurer {
          */
         @Override
         public void afterCompletion(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, Exception e) throws Exception {
-            log.info("执行到了afterCompletion方法");
         }
 
         //        /**
@@ -96,7 +92,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
 //            response.setHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
 //            response.setHeader("Access-Control-Allow-Credentials", "true");
 //        }
-        private void returnJson(HttpServletResponse response, String json) throws Exception {
+        private void returnJson(HttpServletResponse response, String json){
             PrintWriter writer = null;
             response.setCharacterEncoding("UTF-8");
             response.setContentType("text/html; charset=utf-8");
