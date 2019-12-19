@@ -24,7 +24,6 @@ import java.util.Date;
  */
 @RestController
 @RequestMapping("staff")
-@CrossOrigin
 public class StaffController {
     @Autowired
     private StaffService staffService;

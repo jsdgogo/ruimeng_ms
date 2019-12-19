@@ -24,7 +24,6 @@ import java.util.Date;
  */
 @RestController
 @RequestMapping("gasCylinder")
-@CrossOrigin
 public class GasCylinderController {
 
     @Autowired

@@ -19,7 +19,6 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("user")
-@CrossOrigin
 public class UserController {
     @Autowired
     private UserService userService;
@@ -89,21 +88,12 @@ public class UserController {
     }
 
     /**
-     * @param password  密码
-     * @param loginName 登录名
-     * @param request   请求
+     * @param user  用戶
      * @return Result 结果
      * @Description 修改用户名密码
      */
     @PostMapping("update")
-    public Result update(String password, String loginName, HttpServletRequest request) {
-        User user = getByToken(request);
-        if (StringUtils.isNotBlank(loginName)) {
-            user.setLoginName(loginName);
-        }
-        if (StringUtils.isNotBlank(password)) {
-            user.setPassword(password);
-        }
+    public Result update(User user) {
         userService.updateById(user);
         return Result.ok();
     }

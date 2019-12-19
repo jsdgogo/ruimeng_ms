@@ -24,7 +24,6 @@ import java.util.Date;
  */
 @RestController
 @RequestMapping("customerEmptyBottle")
-@CrossOrigin
 public class CustomerEmptyBottleController {
 
     @Autowired

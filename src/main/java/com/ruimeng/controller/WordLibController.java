@@ -24,7 +24,6 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("wordLib")
-@CrossOrigin
 public class WordLibController {
 
     @Autowired

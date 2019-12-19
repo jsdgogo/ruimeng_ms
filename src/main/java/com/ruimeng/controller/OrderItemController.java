@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("orderItem")
-@CrossOrigin
 public class OrderItemController {
 
 }

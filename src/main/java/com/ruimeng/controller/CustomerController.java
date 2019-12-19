@@ -25,7 +25,6 @@ import java.util.Date;
  */
 @RestController
 @RequestMapping("customer")
-@CrossOrigin
 public class CustomerController {
 
     @Autowired

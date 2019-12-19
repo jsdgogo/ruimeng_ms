@@ -28,7 +28,6 @@ import java.util.Date;
  */
 @RestController
 @RequestMapping("order")
-@CrossOrigin
 public class OrderController {
 
     @Autowired
