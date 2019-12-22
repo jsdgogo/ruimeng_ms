@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/ms?characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/ms?characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
     password: 123456
 # Hikari是Spring Boot 2.0之后默认整合的数据库连接池，比druid更快的数据库连接池
@@ -29,7 +29,7 @@ spring:
     active: dev
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
-    #time-zone: GMT+8
+    time-zone: GMT+8
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

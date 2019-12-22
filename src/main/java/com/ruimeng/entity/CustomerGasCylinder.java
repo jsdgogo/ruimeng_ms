@@ -22,15 +22,17 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-public class CustomerEmptyBottle implements Serializable {
+public class CustomerGasCylinder implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    @TableField("emptyBottleId")
-    private Integer emptyBottleId; //空瓶id
+    @TableField("gasCylinderId")
+    private Integer gasCylinderId; //气瓶id
+
+    private String gasCylinderName;//气瓶名
 
     private String total; //所欠空瓶总数量
 

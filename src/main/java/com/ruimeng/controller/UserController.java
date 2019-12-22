@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -19,6 +20,7 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("user")
+@CrossOrigin
 public class UserController {
     @Autowired
     private UserService userService;
@@ -93,9 +95,14 @@ public class UserController {
      * @Description 修改用户名密码
      */
     @PostMapping("update")
-    public Result update(User user) {
-        userService.updateById(user);
-        return Result.ok();
+    public Result update(User user,String oldPassword,HttpServletRequest request) {
+        User oldUser = getByToken(request);
+        if (oldUser != null&&oldUser.getPassword().equals(oldPassword)){
+            user.setUpdateTime(new Date());
+            userService.updateById(user);
+            return Result.ok();
+        }
+        return Result.error().message("原密码错误,修改失败");
     }
 
 }

@@ -4,8 +4,8 @@ package com.ruimeng.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.ruimeng.entity.CustomerEmptyBottle;
-import com.ruimeng.service.CustomerEmptyBottleService;
+import com.ruimeng.entity.CustomerGasCylinder;
+import com.ruimeng.service.CustomerGasCylinderService;
 import com.ruimeng.vo.PageParam;
 import com.ruimeng.vo.Result;
 import org.apache.commons.lang3.StringUtils;
@@ -23,17 +23,17 @@ import java.util.Date;
  * @since 2019-11-27
  */
 @RestController
-@RequestMapping("customerEmptyBottle")
-public class CustomerEmptyBottleController {
+@RequestMapping("customerGasCylinder")
+public class CustomerGasCylinderController {
 
     @Autowired
-    private CustomerEmptyBottleService customerEmptyBottleService;
+    private CustomerGasCylinderService customerGasCylinderService;
 
     @PostMapping("save")
-    public Result save(CustomerEmptyBottle customerEmptyBottle) {
-        customerEmptyBottle.setCreateTime(new Date());
-        customerEmptyBottle.setUpdateTime(new Date());
-        if (customerEmptyBottleService.save(customerEmptyBottle)) {
+    public Result save(CustomerGasCylinder customerGasCylinder) {
+        customerGasCylinder.setCreateTime(new Date());
+        customerGasCylinder.setUpdateTime(new Date());
+        if (customerGasCylinderService.save(customerGasCylinder)) {
             return Result.ok();
         }
         return Result.error();
@@ -41,16 +41,16 @@ public class CustomerEmptyBottleController {
 
     @GetMapping("deleteById")
     public Result deleteById(int id) {
-        if (customerEmptyBottleService.removeById(id)) {
+        if (customerGasCylinderService.removeById(id)) {
             return Result.ok();
         }
         return Result.error();
     }
 
     @PostMapping("update")
-    public Result update(CustomerEmptyBottle customerEmptyBottle) {
-        customerEmptyBottle.setUpdateTime(new Date());
-        if (customerEmptyBottleService.updateById(customerEmptyBottle)) {
+    public Result update(CustomerGasCylinder customerGasCylinder) {
+        customerGasCylinder.setUpdateTime(new Date());
+        if (customerGasCylinderService.updateById(customerGasCylinder)) {
             return Result.ok();
         }
         return Result.error();
@@ -58,22 +58,22 @@ public class CustomerEmptyBottleController {
 
     @PostMapping("findByPage")
     public Result findByPage(PageParam pageParam) {
-        QueryWrapper<CustomerEmptyBottle> queryWrapper = new QueryWrapper<>();
+        QueryWrapper<CustomerGasCylinder> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(pageParam.getSearch())) {
             queryWrapper.like("search", pageParam.getSearch());
         }
         if (StringUtils.isNotBlank(pageParam.getOrderBy())) {
             queryWrapper.orderBy(true, pageParam.isAscOrDesc(), pageParam.getOrderBy());
         }
-        Page<CustomerEmptyBottle> page = new Page<>(pageParam.getIndex(), pageParam.getSize());
-        IPage<CustomerEmptyBottle> customerEmptyBottleIPage = customerEmptyBottleService.page(page, queryWrapper);
-        return Result.ok().data("page", customerEmptyBottleIPage);
+        Page<CustomerGasCylinder> page = new Page<>(pageParam.getIndex(), pageParam.getSize());
+        IPage<CustomerGasCylinder> customerGasCylinderIPage = customerGasCylinderService.page(page, queryWrapper);
+        return Result.ok().data("page", customerGasCylinderIPage);
     }
 
     @GetMapping("getById")
     public Result getById(int id) {
-        CustomerEmptyBottle customerEmptyBottle = customerEmptyBottleService.getById(id);
-        return Result.ok().data("customerEmptyBottle", customerEmptyBottle);
+        CustomerGasCylinder customerGasCylinder = customerGasCylinderService.getById(id);
+        return Result.ok().data("customerGasCylinder", customerGasCylinder);
     }
 
 }

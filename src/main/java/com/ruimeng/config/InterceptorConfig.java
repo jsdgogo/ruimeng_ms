@@ -45,8 +45,11 @@ public class InterceptorConfig implements WebMvcConfigurer {
          * 请求执行前执行
          */
         @Override
-        public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object o) throws Exception {
+        public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object o){
+            crossDomain(request,response);
             if (request.getMethod().equals(RequestMethod.OPTIONS.name())) {
+                response.setContentType("text/plain, charset=utf-8");
+                response.setContentLength(0);
                 return true;
             }
             User user = getByToken(request);
@@ -85,13 +88,15 @@ public class InterceptorConfig implements WebMvcConfigurer {
         public void afterCompletion(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, Exception e) throws Exception {
         }
 
-        //        /**
-//         * 跨域处理
-//         */
-//        public void crossDomain(HttpServletRequest request, HttpServletResponse response) {
-//            response.setHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
-//            response.setHeader("Access-Control-Allow-Credentials", "true");
-//        }
+                /**
+         * 跨域处理
+         */
+        public void crossDomain(HttpServletRequest request, HttpServletResponse response) {
+            response.setHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
+            response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+            response.setHeader("Access-Control-Allow-Headers", "*");
+
+        }
         private void returnJson(HttpServletResponse response, String json){
             PrintWriter writer = null;
             response.setCharacterEncoding("UTF-8");
