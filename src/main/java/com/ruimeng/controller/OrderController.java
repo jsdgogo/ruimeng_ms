@@ -11,6 +11,7 @@ import com.ruimeng.service.OrderService;
 import com.ruimeng.util.DateUtil;
 import com.ruimeng.vo.PageParam;
 import com.ruimeng.vo.Result;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -28,16 +29,15 @@ import java.util.Date;
  */
 @RestController
 @RequestMapping("order")
+@Slf4j
 public class OrderController {
 
     @Autowired
     private OrderService orderService;
 
     @PostMapping("save")
-    public Result save(Order order) {
-        if (orderService.add(order)) {
-            return Result.ok();
-        }
+    public Result save(@RequestBody String order) {
+        log.info(order);
         return Result.error();
     }
 

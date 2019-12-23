@@ -50,6 +50,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
             if (request.getMethod().equals(RequestMethod.OPTIONS.name())) {
                 response.setContentType("text/plain, charset=utf-8");
                 response.setContentLength(0);
+                response.setStatus(204);
                 return true;
             }
             User user = getByToken(request);

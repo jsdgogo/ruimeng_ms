@@ -59,4 +59,5 @@ public class Order implements Serializable {
 
     @Transient
     private List<OrderItem> orderItems;
+
 }
