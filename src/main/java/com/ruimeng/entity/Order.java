@@ -42,7 +42,7 @@ public class Order implements Serializable {
     private Integer quantity; //购买数量
 
     @TableField("totalPrice")
-    private BigDecimal totalPrice; //订单总价
+    private Double totalPrice; //订单总价
 
     public static final int STATUS_YES = 1; // 已完成
     public static final int STATUS_NO = 0; // 未完成

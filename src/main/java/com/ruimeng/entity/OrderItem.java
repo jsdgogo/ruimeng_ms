@@ -35,7 +35,7 @@ public class OrderItem implements Serializable {
 
     private Integer quantity; //购买数量
 
-    private BigDecimal price; //气瓶单价
+    private Double price; //气瓶单价
     private Integer gasCylinderId;//气瓶id
 
     @TableField("createTime")
