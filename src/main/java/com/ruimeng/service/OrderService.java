@@ -1,6 +1,6 @@
 package com.ruimeng.service;
 
-import com.ruimeng.entity.Order;
+import com.ruimeng.entity.Orders;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -11,9 +11,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @author JiangShiDing
  * @since 2019-11-27
  */
-public interface OrderService extends IService<Order> {
+public interface OrderService extends IService<Orders> {
 
-    boolean deleteById(int id);
-
-    boolean add(Order order);
 }

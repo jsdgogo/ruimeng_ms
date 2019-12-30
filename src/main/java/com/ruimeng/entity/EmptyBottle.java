@@ -28,13 +28,13 @@ public class EmptyBottle implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private int id;
 
     private String name; //空瓶名
 
     private String type; //空瓶类型
 
-    private Integer number; //空瓶数量
+    private int number; //空瓶数量
 
     private BigDecimal price; //空瓶单价
 

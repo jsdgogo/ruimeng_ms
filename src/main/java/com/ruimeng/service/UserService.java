@@ -2,7 +2,6 @@ package com.ruimeng.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ruimeng.entity.User;
-import com.ruimeng.entity.WordLib;
 
 /**
  * <p>

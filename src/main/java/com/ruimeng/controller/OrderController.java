@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruimeng.dto.CustomerDto;
 import com.ruimeng.dto.OrderDto;
 import com.ruimeng.dto.OrderItemDto;
-import com.ruimeng.entity.Order;
+import com.ruimeng.entity.Orders;
 import com.ruimeng.entity.OrderItem;
 import com.ruimeng.service.OrderItemService;
 import com.ruimeng.service.OrderService;
@@ -26,6 +26,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -42,20 +43,24 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
+    @Autowired
+    private OrderItemService orderItemService;
 
     @PostMapping("save")
     public Result save(@RequestBody String orderInfo) throws ParseException {
-//        TypeReference<KeepState<List<Order>>> type = new TypeReference<KeepState<List<Order>>>() {
-//        };
-//        KeepState<List<Order>> keepState = JSON.parseObject(content, type);
-        OrderDto orderDto = JSON.parseObject(orderInfo, OrderDto.class);
+        Map map = JSON.parseObject(orderInfo, Map.class);
+        Object object = map.get("orderInfo");
+        String string = JSON.toJSONString(object);
+        TypeReference<OrderDto> type = new TypeReference<OrderDto>() {};
+        OrderDto orderDto = JSON.parseObject(string, type);
         CustomerDto customer = orderDto.getCustomer();
         List<OrderItemDto> orderItems = orderDto.getOrderItems();
         String createTimeStr = orderDto.getCreateTimeStr();
-        Order order = new Order();
-        order.setCustomerId(customer.getId());
-        order.setCustomerName(customer.getName());
+        Orders order = new Orders();
+        order.setCustomerId(customer.getCustomerId());
+        order.setCustomerName(customer.getCustomerName());
         order.setCreateTime(new Date());
+        order.setUpdateTime(new Date());
         if (StringUtils.isNotBlank(createTimeStr)) {
             order.setCreateTime(DateUtil.stringToDate(createTimeStr));
         }
@@ -71,25 +76,27 @@ public class OrderController {
             orderItem.setQuantity(orderItemDto.getQuantity());
             orderItemList.add(orderItem);
         }
-        order.setOrderItems(orderItemList);
+        order.setStatus(Orders.STATUS_NO);
         order.setQuantity(quantity);
         order.setTotalPrice(totalPrice);
-        orderService.add(order);
-        log.info(orderInfo);
+        if (orderService.save(order)){
+            orderItemService.saveBatch(orderItemList);
+            return Result.ok();
+        }
         return Result.error();
     }
 
 
     @GetMapping("deleteById")
     public Result deleteById(int id) {
-        if (orderService.deleteById(id)) {
+        if (orderService.removeById(id)) {
             return Result.ok();
         }
         return Result.error();
     }
 
     @PostMapping("update")
-    public Result update(Order order) {
+    public Result update(Orders order) {
         order.setUpdateTime(new Date());
         if (orderService.updateById(order)) {
             return Result.ok();
@@ -99,7 +106,7 @@ public class OrderController {
 
     @PostMapping("findByPage")
     public Result findByPage(PageParam pageParam, String startTime, String endTime) throws ParseException {
-        QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
+        QueryWrapper<Orders> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(pageParam.getSearch())) {
             queryWrapper.like("search", pageParam.getSearch());
         }
@@ -116,14 +123,14 @@ public class OrderController {
             Date endDate = DateUtil.stringToDate(endTime);
             queryWrapper.le("createTime", endDate.getTime());
         }
-        Page<Order> page = new Page<>(pageParam.getIndex(), pageParam.getSize());
-        IPage<Order> orderIPage = orderService.page(page, queryWrapper);
+        Page<Orders> page = new Page<>(pageParam.getIndex(), pageParam.getSize());
+        IPage<Orders> orderIPage = orderService.page(page, queryWrapper);
         return Result.ok().data("page", orderIPage);
     }
 
     @GetMapping("getById")
     public Result getById(int id) {
-        Order order = orderService.getById(id);
+        Orders order = orderService.getById(id);
         return Result.ok().data("order", order);
     }
     //excel
@@ -145,7 +152,7 @@ public class OrderController {
 //                    endTime);
 //            List<Map<String, Object>> newList = new ArrayList<>();
 //            for (Map<String, Object> map : list) {
-//                if ((int) map.get("isAllocation") == Order.ISALLOCATION_FALSE) {
+//                if ((int) map.get("isAllocation") == Orders.ISALLOCATION_FALSE) {
 //                    setMapParams(map, loginShopId);
 //                    newList.add(map);
 //                }

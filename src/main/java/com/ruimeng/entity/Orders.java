@@ -13,6 +13,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
+import javax.persistence.Table;
 import javax.persistence.Transient;
 
 /**
@@ -27,37 +28,33 @@ import javax.persistence.Transient;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-public class Order implements Serializable {
+@Table(name = "orders")
+public class Orders implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private int id;
 
     @TableField("customerId")
-    private Integer customerId; //客户id
+    private int customerId; //客户id
 
+    @TableField("customerName")
     private String customerName; //客户名
-    private String description; //订单描述
-    private Integer quantity; //购买数量
+    private int quantity; //购买数量
 
     @TableField("totalPrice")
-    private Double totalPrice; //订单总价
+    private double totalPrice; //订单总价
 
     public static final int STATUS_YES = 1; // 已完成
     public static final int STATUS_NO = 0; // 未完成
 
-    private Integer status; //订单状态
-
-    private Integer paid;// 支付状态
+    private int status; //订单状态
 
     @TableField("createTime")
     private Date createTime; //创建时间
 
     @TableField("updateTime")
     private Date updateTime; //修改时间
-
-    @Transient
-    private List<OrderItem> orderItems;
 
 }

@@ -28,22 +28,15 @@ public class OrderItem implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private int id;
 
     @TableField("orderId")
-    private Integer orderId; //订单id
+    private int orderId; //订单id
 
-    private Integer quantity; //购买数量
+    private int quantity; //购买数量
 
-    private Double price; //气瓶单价
-    private Integer gasCylinderId;//气瓶id
-
-    @TableField("createTime")
-    private Date createTime; //创建时间
-
-    @TableField("updateTime")
-    private Date updateTime; //修改时间
-
-
+    private double price; //气瓶单价
+    @TableField("gasCylinderId")
+    private int gasCylinderId;//气瓶id
 
 }

@@ -21,14 +21,12 @@ import java.util.Date;
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private static final int LEVEL_ADMIN = 1;
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private int id;
     private String name; //用户名
     @TableField("loginName")
     private String loginName; //登录名
     private String password; //密码
-    private int level;//级别
     @TableField("createTime")
     private Date createTime; //创建时间
     @TableField("updateTime")

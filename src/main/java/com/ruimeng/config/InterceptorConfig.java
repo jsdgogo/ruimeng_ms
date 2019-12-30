@@ -51,7 +51,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
                 response.setContentType("text/plain, charset=utf-8");
                 response.setContentLength(0);
                 response.setStatus(204);
-                return true;
+                return false;
             }
             User user = getByToken(request);
             if (user == null) {
@@ -79,14 +79,14 @@ public class InterceptorConfig implements WebMvcConfigurer {
          * 请求结束执行
          */
         @Override
-        public void postHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, ModelAndView modelAndView) throws Exception {
+        public void postHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, ModelAndView modelAndView)  {
         }
 
         /**
          * 视图渲染完成后执行
          */
         @Override
-        public void afterCompletion(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, Exception e) throws Exception {
+        public void afterCompletion(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, Exception e) {
         }
 
                 /**

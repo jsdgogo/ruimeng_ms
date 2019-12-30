@@ -12,7 +12,7 @@ public enum ResultCodeEnum {
 
     SUCCESS(true, 0,"成功"),
     NO_USER_ERROR(false, 1001, "未登录,请跳转登录页重新登录"),
-    UNKNOWN_REASON(false, 1, "未知错误"),
+    UNKNOWN_REASON(false, 1, "未知错误,请重试"),
     BAD_SQL_GRAMMAR(false, 10001, "sql语法错误"),
     JSON_PARSE_ERROR(false, 10002, "json解析异常"),
     PARAM_ERROR(false, 10003, "参数不正确"),

@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruimeng.entity.Staff;
+import com.ruimeng.entity.Staff;
+import com.ruimeng.service.CustomerService;
 import com.ruimeng.service.StaffService;
 import com.ruimeng.vo.PageParam;
 import com.ruimeng.vo.Result;
@@ -32,7 +34,7 @@ public class StaffController {
     public Result save(Staff staff) {
         staff.setCreateTime(new Date());
         staff.setUpdateTime(new Date());
-        if (staffService.save(staff)) {
+        if (staffService.save(staff))  {
             return Result.ok();
         }
         return Result.error();
@@ -40,39 +42,37 @@ public class StaffController {
 
     @GetMapping("deleteById")
     public Result deleteById(int id) {
-        if (staffService.removeById(id)) {
+        if(staffService.removeById(id)){
             return Result.ok();
         }
         return Result.error();
     }
-
     @PostMapping("update")
     public Result update(Staff staff) {
         staff.setUpdateTime(new Date());
-        if (staffService.updateById(staff)) {
+        if(staffService.updateById(staff)){
             return Result.ok();
         }
         return Result.error();
     }
 
     @PostMapping("findByPage")
-    public Result findByPage(PageParam pageParam) {
+    public Result findByPage(PageParam pageParam ) {
         QueryWrapper<Staff> queryWrapper = new QueryWrapper<>();
-        if (StringUtils.isNotBlank(pageParam.getSearch())) {
-            queryWrapper.like("search", pageParam.getSearch());
+        if (StringUtils.isNotBlank(pageParam.getSearch())){
+            queryWrapper.like("search",pageParam.getSearch());
         }
-        if (StringUtils.isNotBlank(pageParam.getOrderBy())) {
-            queryWrapper.orderBy(true, pageParam.isAscOrDesc(), pageParam.getOrderBy());
+        if(StringUtils.isNotBlank(pageParam.getOrderBy())){
+            queryWrapper.orderBy(true,pageParam.isAscOrDesc(),pageParam.getOrderBy());
         }
-        Page<Staff> page = new Page<>(pageParam.getIndex(), pageParam.getSize());
-        IPage<Staff> staffIPage = staffService.page(page, queryWrapper);
-        return Result.ok().data("page", staffIPage);
+        Page<Staff> page = new Page<>(pageParam.getIndex(),pageParam.getSize());
+        IPage<Staff> customerIPage = staffService.page(page, queryWrapper);
+        return Result.ok().data("page",customerIPage);
     }
-
     @GetMapping("getById")
     public Result getById(int id) {
         Staff staff = staffService.getById(id);
-        return Result.ok().data("staff", staff);
+        return Result.ok().data("staff",staff);
     }
 }
 

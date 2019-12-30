@@ -28,20 +28,20 @@ public class Staff implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private int id;
 
     private String name; //员工名
 
-    private Integer age;//员工年龄
+    private int age;//员工年龄
 
     private String phone; //联系电话
 
     @TableField("workYears")
     private String workYears; //工龄
 
-    private BigDecimal salary; //月工资
+    private double salary; //月工资
 
-    private Integer level; //级别
+    private String position; //职位
 
     @TableField("createTime")
     private Date createTime; //创建时间

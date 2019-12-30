@@ -28,13 +28,13 @@ public class GasCylinder implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private int id;
 
     private String name; //气瓶名
 
     private String type; //气瓶类型
 
-    private Integer inventory; //气瓶库存
+    private int inventory; //气瓶库存
 
     private BigDecimal price; //气瓶单价
 

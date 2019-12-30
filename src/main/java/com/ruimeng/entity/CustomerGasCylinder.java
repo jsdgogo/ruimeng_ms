@@ -27,23 +27,23 @@ public class CustomerGasCylinder implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private int id;
 
     @TableField("gasCylinderId")
-    private Integer gasCylinderId; //气瓶id
+    private int gasCylinderId; //气瓶id
 
     private String gasCylinderName;//气瓶名
 
     private String total; //所欠空瓶总数量
 
     @TableField("customerId")
-    private Integer customerId; //客户id
+    private int customerId; //客户id
 
     @TableField("customerName")
     private String customerName;  //客户名
 
     @TableField("sendBackNumber")
-    private Integer sendBackNumber;  //已归还数量
+    private int sendBackNumber;  //已归还数量
 
     @TableField("createTime")
     private Date createTime;  //创建时间
@@ -54,6 +54,6 @@ public class CustomerGasCylinder implements Serializable {
     public static final int STATUS_YES = 1; // 已还清
     public static final int STATUS_NO = 0; // 未还清
 
-    private Integer status; //是否还完
+    private int status; //是否还完
 
 }
