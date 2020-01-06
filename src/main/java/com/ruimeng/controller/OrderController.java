@@ -9,8 +9,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruimeng.dto.CustomerDto;
 import com.ruimeng.dto.OrderDto;
 import com.ruimeng.dto.OrderItemDto;
+import com.ruimeng.entity.Customer;
+import com.ruimeng.entity.GasCylinder;
 import com.ruimeng.entity.Orders;
 import com.ruimeng.entity.OrderItem;
+import com.ruimeng.service.CustomerService;
+import com.ruimeng.service.GasCylinderService;
 import com.ruimeng.service.OrderItemService;
 import com.ruimeng.service.OrderService;
 import com.ruimeng.util.DateUtil;
@@ -45,6 +49,10 @@ public class OrderController {
     private OrderService orderService;
     @Autowired
     private OrderItemService orderItemService;
+    @Autowired
+    private CustomerService customerService;
+    @Autowired
+    private GasCylinderService gasCylinderService;
 
     @PostMapping("save")
     public Result save(@RequestBody String orderInfo) throws ParseException {
@@ -80,6 +88,15 @@ public class OrderController {
         order.setQuantity(quantity);
         order.setTotalPrice(totalPrice);
         if (orderService.save(order)){
+            for (OrderItem orderItem : orderItemList) {
+                orderItem.setOrderId(order.getId());
+                GasCylinder gasCylinder = gasCylinderService.getById(orderItem.getGasCylinderId());
+                int inventory = gasCylinder.getInventory();
+                inventory-=orderItem.getQuantity();
+                gasCylinder.setInventory(inventory);
+                gasCylinder.setUpdateTime(new Date());
+                gasCylinderService.updateById(gasCylinder);
+            }
             orderItemService.saveBatch(orderItemList);
             return Result.ok();
         }
@@ -96,16 +113,59 @@ public class OrderController {
     }
 
     @PostMapping("update")
-    public Result update(Orders order) {
+    public Result update(@RequestBody String orderInfo) throws ParseException {
+        Map map = JSON.parseObject(orderInfo, Map.class);
+        Object object = map.get("orderInfo");
+        String string = JSON.toJSONString(object);
+        TypeReference<OrderDto> type = new TypeReference<OrderDto>() {};
+        OrderDto orderDto = JSON.parseObject(string, type);
+        CustomerDto customer = orderDto.getCustomer();
+        List<OrderItemDto> orderItems = orderDto.getOrderItems();
+        String createTimeStr = orderDto.getCreateTimeStr();
+        Orders order = new Orders();
+        order.setId(orderDto.getId());
+        order.setCustomerId(customer.getCustomerId());
+        order.setCustomerName(customer.getCustomerName());
         order.setUpdateTime(new Date());
-        if (orderService.updateById(order)) {
-            return Result.ok();
+        if (StringUtils.isNotBlank(createTimeStr)) {
+            order.setCreateTime(DateUtil.stringToDate(createTimeStr));
+        }
+        int quantity = 0;
+        double totalPrice = 0;
+        List<OrderItem> orderItemList = new ArrayList<>();
+        for (OrderItemDto orderItemDto : orderItems) {
+            quantity+=orderItemDto.getQuantity();
+            totalPrice+=orderItemDto.getPrice()*orderItemDto.getQuantity();
+            OrderItem orderItem = new OrderItem();
+            orderItem.setGasCylinderId(orderItemDto.getGasCylinderId());
+            orderItem.setPrice(orderItemDto.getPrice());
+            orderItem.setOrderId(order.getId());
+            orderItem.setQuantity(orderItemDto.getQuantity());
+            orderItem.setId(orderItemDto.getId());
+            orderItemList.add(orderItem);
+        }
+        order.setStatus(Orders.STATUS_NO);
+        order.setQuantity(quantity);
+        order.setTotalPrice(totalPrice);
+        if (orderService.updateById(order)){
+                for (OrderItem orderItem : orderItemList) {
+                    OrderItem oldOrderItem = orderItemService.getById(orderItem.getId());
+                    GasCylinder gasCylinder = gasCylinderService.getById(orderItem.getGasCylinderId());
+                    int inventory = gasCylinder.getInventory();
+                    inventory+=oldOrderItem.getQuantity();
+                    inventory -= orderItem.getQuantity();
+                    gasCylinder.setInventory(inventory);
+                    gasCylinder.setUpdateTime(new Date());
+                    gasCylinderService.updateById(gasCylinder);
+                    orderItemService.updateById(orderItem);
+                }
+                return Result.ok();
         }
         return Result.error();
     }
 
     @PostMapping("findByPage")
-    public Result findByPage(PageParam pageParam, String startTime, String endTime) throws ParseException {
+    public Result findByPage(PageParam pageParam, String beginTime, String endTime) throws ParseException {
         QueryWrapper<Orders> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(pageParam.getSearch())) {
             queryWrapper.like("search", pageParam.getSearch());
@@ -114,14 +174,14 @@ public class OrderController {
             queryWrapper.orderBy(true, pageParam.isAscOrDesc(), pageParam.getOrderBy());
         }
         //创建时间大于等于开始时间
-        if (StringUtils.isNotBlank(startTime)) {
-            Date startDate = DateUtil.stringToDate(startTime);
-            queryWrapper.ge("createTime", startDate.getTime());
+        if (StringUtils.isNotBlank(beginTime)) {
+            Date startDate = DateUtil.stringToDate(beginTime);
+            queryWrapper.ge("createTime", startDate);
         }
         //创建时间小于等于结束时间
         if (StringUtils.isNotBlank(endTime)) {
             Date endDate = DateUtil.stringToDate(endTime);
-            queryWrapper.le("createTime", endDate.getTime());
+            queryWrapper.le("createTime", endDate);
         }
         Page<Orders> page = new Page<>(pageParam.getIndex(), pageParam.getSize());
         IPage<Orders> orderIPage = orderService.page(page, queryWrapper);
@@ -131,9 +191,46 @@ public class OrderController {
     @GetMapping("getById")
     public Result getById(int id) {
         Orders order = orderService.getById(id);
-        return Result.ok().data("order", order);
+        if (order!=null) {
+            OrderDto orderDto = new OrderDto();
+            String createTime = DateUtil.dateToString(order.getCreateTime());
+            if (StringUtils.isNotBlank(createTime)){
+                orderDto.setCreateTimeStr(createTime);
+            }
+            orderDto.setId(order.getId());
+            Customer customer = customerService.getById(order.getCustomerId());
+            CustomerDto customerDto = new CustomerDto();
+            if (customer != null) {
+                customerDto.setCustomerId(customer.getId());
+                customerDto.setCustomerName(customer.getName());
+                customerDto.setAddress(customer.getAddress());
+            }
+            orderDto.setCustomer(customerDto);
+            QueryWrapper<OrderItem> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("orderId", order.getId());
+            List<OrderItem> orderItems = orderItemService.list(queryWrapper);
+            if (orderItems!=null&&!orderItems.isEmpty()) {
+                List<OrderItemDto> orderItemDtos = new ArrayList<>();
+                for (OrderItem orderItem : orderItems) {
+                    OrderItemDto orderItemDto = new OrderItemDto();
+                    orderItemDto.setId(orderItem.getId());
+                    orderItemDto.setGasCylinderId(orderItem.getGasCylinderId());
+                    orderItemDto.setPrice(orderItem.getPrice());
+                    orderItemDto.setQuantity(orderItem.getQuantity());
+                    GasCylinder gasCylinder = gasCylinderService.getById(orderItem.getGasCylinderId());
+                    if (gasCylinder!=null){
+                        orderItemDto.setInventory(gasCylinder.getInventory());
+                        orderItemDto.setName(gasCylinder.getName());
+                    }
+                    orderItemDtos.add(orderItemDto);
+                }
+                orderDto.setOrderItems(orderItemDtos);
+            }
+            return Result.ok().data("order", orderDto);
+        }
+        return Result.error();
     }
-    //excel
+    //excel1
 //    @GetMapping("exportCustomerOrder")
 //    public void exportCustomerOrder(String keepshopId, String startTimeStr, String endTimeStr,
 //                                    HttpServletResponse response) {
