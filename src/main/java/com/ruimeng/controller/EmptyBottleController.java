@@ -6,12 +6,14 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruimeng.entity.EmptyBottle;
 import com.ruimeng.service.EmptyBottleService;
+import com.ruimeng.util.DateUtil;
 import com.ruimeng.vo.PageParam;
 import com.ruimeng.vo.Result;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
 import java.util.Date;
 
 /**
@@ -29,9 +31,15 @@ public class EmptyBottleController {
     private EmptyBottleService emptyBottleService;
 
     @PostMapping("save")
-    public Result save(EmptyBottle emptyBottle) {
+    public Result save(EmptyBottle emptyBottle,String createTimeStr) throws ParseException {
         emptyBottle.setCreateTime(new Date());
         emptyBottle.setUpdateTime(new Date());
+        if (StringUtils.isNotBlank(createTimeStr)) {
+            emptyBottle.setCreateTime(DateUtil.stringToDate(createTimeStr));
+        }
+        int sendBackNumber = emptyBottle.getSendBackNumber();
+        int total = emptyBottle.getTotal();
+        emptyBottle.setNowNumber(total-sendBackNumber);
         if (emptyBottleService.save(emptyBottle))  {
             return Result.ok();
         }
@@ -46,8 +54,14 @@ public class EmptyBottleController {
         return Result.error();
     }
     @PostMapping("update")
-    public Result update(EmptyBottle emptyBottle) {
+    public Result update(EmptyBottle emptyBottle,String createTimeStr) throws ParseException {
         emptyBottle.setUpdateTime(new Date());
+        if (StringUtils.isNotBlank(createTimeStr)) {
+            emptyBottle.setCreateTime(DateUtil.stringToDate(createTimeStr));
+        }
+        int sendBackNumber = emptyBottle.getSendBackNumber();
+        int total = emptyBottle.getTotal();
+        emptyBottle.setNowNumber(total-sendBackNumber);
         if(emptyBottleService.updateById(emptyBottle)){
             return Result.ok();
         }
@@ -55,17 +69,27 @@ public class EmptyBottleController {
     }
 
     @PostMapping("findByPage")
-    public Result findByPage(PageParam pageParam ) {
+    public Result findByPage(PageParam pageParam, String beginTime, String endTime) throws ParseException {
         QueryWrapper<EmptyBottle> queryWrapper = new QueryWrapper<>();
-        if (StringUtils.isNotBlank(pageParam.getSearch())){
-            queryWrapper.like("search",pageParam.getSearch());
+        if (StringUtils.isNotBlank(pageParam.getSearch())) {
+            queryWrapper.like("search", pageParam.getSearch());
         }
-        if(StringUtils.isNotBlank(pageParam.getOrderBy())){
-            queryWrapper.orderBy(true,pageParam.isAscOrDesc(),pageParam.getOrderBy());
+        if (StringUtils.isNotBlank(pageParam.getOrderBy())) {
+            queryWrapper.orderBy(true, pageParam.isAscOrDesc(), pageParam.getOrderBy());
         }
-        Page<EmptyBottle> page = new Page<>(pageParam.getIndex(),pageParam.getSize());
-        IPage<EmptyBottle> emptyBottleIPage = emptyBottleService.page(page, queryWrapper);
-        return Result.ok().data("page",emptyBottleIPage);
+        //创建时间大于等于开始时间
+        if (StringUtils.isNotBlank(beginTime)) {
+            Date startDate = DateUtil.stringToDate(beginTime);
+            queryWrapper.ge("createTime", startDate);
+        }
+        //创建时间小于等于结束时间
+        if (StringUtils.isNotBlank(endTime)) {
+            Date endDate = DateUtil.stringToDate(endTime);
+            queryWrapper.le("createTime", endDate);
+        }
+        Page<EmptyBottle> page = new Page<>(pageParam.getIndex(), pageParam.getSize());
+        IPage<EmptyBottle> emptyBottle = emptyBottleService.page(page, queryWrapper);
+        return Result.ok().data("page", emptyBottle);
     }
     @GetMapping("getById")
     public Result getById(int id) {

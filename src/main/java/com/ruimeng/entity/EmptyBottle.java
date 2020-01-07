@@ -30,18 +30,34 @@ public class EmptyBottle implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private int id;
 
-    private String name; //空瓶名
+    @TableField("gasCylinderId")
+    private int gasCylinderId; //气瓶id
+    @TableField("gasCylinderName")
+    private String gasCylinderName;//气瓶名
 
-    private String type; //空瓶类型
+    private int total; //所欠空瓶总数量
 
-    private int number; //空瓶数量
+    @TableField("customerId")
+    private int customerId; //客户id
 
-    private BigDecimal price; //空瓶单价
+    @TableField("customerName")
+    private String customerName;  //客户名
+
+    @TableField("sendBackNumber")
+    private int sendBackNumber;  //已归还数量
 
     @TableField("createTime")
-    private Date createTime; //创建时间
+    private Date createTime;  //创建时间
 
     @TableField("updateTime")
     private Date updateTime; //修改时间
+
+    public static final int STATUS_YES = 1; // 已还清
+    public static final int STATUS_NO = 0; // 未还清
+    @TableField("nowNumber")
+    private int nowNumber; //未归还数量
+
+    private double price; //空瓶单价
+
 
 }
