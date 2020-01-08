@@ -83,7 +83,8 @@ public class OrderController {
         List<OrderItem> orderItemList = new ArrayList<>();
         for (OrderItemDto orderItemDto : orderItems) {
             quantity += orderItemDto.getQuantity();
-            totalPrice += orderItemDto.getPrice() * orderItemDto.getQuantity();
+            double total = orderItemDto.getPrice() * orderItemDto.getQuantity();
+            totalPrice+=total;
             OrderItem orderItem = new OrderItem();
             orderItem.setGasCylinderId(orderItemDto.getGasCylinderId());
             orderItem.setPrice(orderItemDto.getPrice());
@@ -164,6 +165,9 @@ public class OrderController {
         if (StringUtils.isNotBlank(createTimeStr)) {
             order.setCreateTime(DateUtil.stringToDate(createTimeStr));
         }
+        QueryWrapper<OrderItem> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("orderId", order.getId());
+        if (orderItemService.remove(queryWrapper)){
         int quantity = 0;
         double totalPrice = 0;
         List<OrderItem> orderItemList = new ArrayList<>();
@@ -175,27 +179,28 @@ public class OrderController {
             orderItem.setPrice(orderItemDto.getPrice());
             orderItem.setOrderId(order.getId());
             orderItem.setQuantity(orderItemDto.getQuantity());
-            orderItem.setId(orderItemDto.getId());
             orderItemList.add(orderItem);
         }
         order.setQuantity(quantity);
         order.setTotalPrice(totalPrice);
         if (orderService.updateById(order)) {
-            QueryWrapper<Bill> queryWrapper = new QueryWrapper<>();
+            QueryWrapper<Bill> billQueryWrapper = new QueryWrapper<>();
             for (OrderItem orderItem : orderItemList) {
                 OrderItem oldOrderItem = orderItemService.getById(orderItem.getId());
                 GasCylinder gasCylinder = gasCylinderService.getById(orderItem.getGasCylinderId());
                 orderItem.setGasCylinderName(gasCylinder.getName());
                 int inventory = gasCylinder.getInventory();
-                inventory += oldOrderItem.getQuantity();
+                if (oldOrderItem!=null){
+                    inventory += oldOrderItem.getQuantity();
+                }
                 inventory -= orderItem.getQuantity();
                 gasCylinder.setInventory(inventory);
                 gasCylinder.setUpdateTime(new Date());
                 gasCylinderService.updateById(gasCylinder);
-                orderItemService.updateById(orderItem);
+                orderItemService.save(orderItem);
             }
             queryWrapper.eq("customerId", order.getCustomerId());
-            Bill bill = billService.getOne(queryWrapper);
+            Bill bill = billService.getOne(billQueryWrapper);
             if (bill==null){
                 bill = new Bill();
                 bill.setCreateTime(new Date());
@@ -217,6 +222,7 @@ public class OrderController {
             bill.setTotalDebt(totalDebt);
             billService.saveOrUpdate(bill);
             return Result.ok();
+        }
         }
         return Result.error();
     }
