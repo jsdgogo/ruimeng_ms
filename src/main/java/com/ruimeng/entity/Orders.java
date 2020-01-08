@@ -46,11 +46,7 @@ public class Orders implements Serializable {
     @TableField("totalPrice")
     private double totalPrice; //订单总价
 
-    public static final int STATUS_YES = 1; // 已完成
-    public static final int STATUS_NO = 0; // 未完成
-
-    private int status; //订单状态
-
+    private double paid; //客户付款金额
     @TableField("createTime")
     private Date createTime; //创建时间
 

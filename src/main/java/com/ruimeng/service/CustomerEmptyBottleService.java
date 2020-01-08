@@ -1,6 +1,6 @@
 package com.ruimeng.service;
 
-import com.ruimeng.entity.EmptyBottle;
+import com.ruimeng.entity.CustomerEmptyBottle;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @author JiangShiDing
  * @since 2019-11-27
  */
-public interface EmptyBottleService extends IService<EmptyBottle> {
+public interface CustomerEmptyBottleService extends IService<CustomerEmptyBottle> {
 
 }

@@ -10,4 +10,5 @@ public class OrderDto {
     private CustomerDto customer;
     private List<OrderItemDto> orderItems;
     private String createTimeStr;
+    private double paid;
 }

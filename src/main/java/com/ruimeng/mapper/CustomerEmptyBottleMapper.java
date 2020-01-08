@@ -1,6 +1,6 @@
 package com.ruimeng.mapper;
 
-import com.ruimeng.entity.EmptyBottle;
+import com.ruimeng.entity.CustomerEmptyBottle;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author JiangShiDing
  * @since 2019-11-27
  */
-public interface EmptyBottleMapper extends BaseMapper<EmptyBottle> {
+public interface CustomerEmptyBottleMapper extends BaseMapper<CustomerEmptyBottle> {
 
 }

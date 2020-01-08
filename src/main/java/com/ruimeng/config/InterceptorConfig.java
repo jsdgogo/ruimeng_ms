@@ -55,11 +55,11 @@ public class InterceptorConfig implements WebMvcConfigurer {
             }
             User user = getByToken(request);
             if (user == null) {
-                Result result = Result.setResult(ResultCodeEnum.NO_USER_ERROR);
-                String resultJson = JSONObject.toJSONString(result);
-                returnJson(response, resultJson);
-                log.info("已成功拦截并转发跳转");
-                return false;
+//                Result result = Result.setResult(ResultCodeEnum.NO_USER_ERROR);
+//                String resultJson = JSONObject.toJSONString(result);
+//                returnJson(response, resultJson);
+//                log.info("已成功拦截并转发跳转");
+//                return false;
             }
             return true;
         }

@@ -4,8 +4,8 @@ package com.ruimeng.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.ruimeng.entity.EmptyBottle;
-import com.ruimeng.service.EmptyBottleService;
+import com.ruimeng.entity.Bill;
+import com.ruimeng.service.BillService;
 import com.ruimeng.util.DateUtil;
 import com.ruimeng.vo.PageParam;
 import com.ruimeng.vo.Result;
@@ -18,29 +18,24 @@ import java.util.Date;
 
 /**
  * <p>
- *  前端控制器
+ * 前端控制器
  * </p>
  *
  * @author JiangShiDing
  * @since 2019-11-27
  */
 @RestController
-@RequestMapping("emptyBottle")
-public class EmptyBottleController {
+@RequestMapping("bill")
+public class BillController {
+
     @Autowired
-    private EmptyBottleService emptyBottleService;
+    private BillService billService;
 
     @PostMapping("save")
-    public Result save(EmptyBottle emptyBottle,String createTimeStr) throws ParseException {
-        emptyBottle.setCreateTime(new Date());
-        emptyBottle.setUpdateTime(new Date());
-        if (StringUtils.isNotBlank(createTimeStr)) {
-            emptyBottle.setCreateTime(DateUtil.stringToDate(createTimeStr));
-        }
-        int sendBackNumber = emptyBottle.getSendBackNumber();
-        int total = emptyBottle.getTotal();
-        emptyBottle.setNowNumber(total-sendBackNumber);
-        if (emptyBottleService.save(emptyBottle))  {
+    public Result save(Bill bill) {
+        bill.setCreateTime(new Date());
+        bill.setUpdateTime(new Date());
+        if (billService.save(bill)) {
             return Result.ok();
         }
         return Result.error();
@@ -48,21 +43,16 @@ public class EmptyBottleController {
 
     @GetMapping("deleteById")
     public Result deleteById(int id) {
-        if(emptyBottleService.removeById(id)){
+        if (billService.removeById(id)) {
             return Result.ok();
         }
         return Result.error();
     }
+
     @PostMapping("update")
-    public Result update(EmptyBottle emptyBottle,String createTimeStr) throws ParseException {
-        emptyBottle.setUpdateTime(new Date());
-        if (StringUtils.isNotBlank(createTimeStr)) {
-            emptyBottle.setCreateTime(DateUtil.stringToDate(createTimeStr));
-        }
-        int sendBackNumber = emptyBottle.getSendBackNumber();
-        int total = emptyBottle.getTotal();
-        emptyBottle.setNowNumber(total-sendBackNumber);
-        if(emptyBottleService.updateById(emptyBottle)){
+    public Result update(Bill bill) {
+        bill.setUpdateTime(new Date());
+        if (billService.updateById(bill)) {
             return Result.ok();
         }
         return Result.error();
@@ -70,7 +60,7 @@ public class EmptyBottleController {
 
     @PostMapping("findByPage")
     public Result findByPage(PageParam pageParam, String beginTime, String endTime) throws ParseException {
-        QueryWrapper<EmptyBottle> queryWrapper = new QueryWrapper<>();
+        QueryWrapper<Bill> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(pageParam.getSearch())) {
             queryWrapper.like("search", pageParam.getSearch());
         }
@@ -87,16 +77,16 @@ public class EmptyBottleController {
             Date endDate = DateUtil.stringToDate(endTime);
             queryWrapper.le("createTime", endDate);
         }
-        Page<EmptyBottle> page = new Page<>(pageParam.getIndex(), pageParam.getSize());
-        IPage<EmptyBottle> emptyBottle = emptyBottleService.page(page, queryWrapper);
-        return Result.ok().data("page", emptyBottle);
-    }
-    @GetMapping("getById")
-    public Result getById(int id) {
-        EmptyBottle emptyBottle = emptyBottleService.getById(id);
-        return Result.ok().data("emptyBottle",emptyBottle);
+        Page<Bill> page = new Page<>(pageParam.getIndex(), pageParam.getSize());
+        IPage<Bill> orderIPage = billService.page(page, queryWrapper);
+        return Result.ok().data("page", orderIPage);
     }
 
+    @GetMapping("getById")
+    public Result getById(int id) {
+        Bill bill = billService.getById(id);
+        return Result.ok().data("bill", bill);
+    }
 
 }
 

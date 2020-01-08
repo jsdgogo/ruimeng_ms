@@ -1,9 +1,9 @@
 package com.ruimeng.service.impl;
 
-import com.ruimeng.entity.EmptyBottle;
-import com.ruimeng.mapper.EmptyBottleMapper;
-import com.ruimeng.service.EmptyBottleService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ruimeng.entity.Bill;
+import com.ruimeng.mapper.BillMapper;
+import com.ruimeng.service.BillService;
 import org.springframework.stereotype.Service;
 
 /**
@@ -15,6 +15,6 @@ import org.springframework.stereotype.Service;
  * @since 2019-11-27
  */
 @Service
-public class EmptyBottleServiceImpl extends ServiceImpl<EmptyBottleMapper, EmptyBottle> implements EmptyBottleService {
+public class BillImpl extends ServiceImpl<BillMapper, Bill> implements BillService {
 
 }

@@ -22,38 +22,29 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-public class CustomerGasCylinder implements Serializable {
+public class Bill implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
     private int id;
-
-    @TableField("gasCylinderId")
-    private int gasCylinderId; //气瓶id
-
-    private String gasCylinderName;//气瓶名
-
-    private String total; //所欠空瓶总数量
-
     @TableField("customerId")
     private int customerId; //客户id
-
     @TableField("customerName")
     private String customerName;  //客户名
-
-    @TableField("sendBackNumber")
-    private int sendBackNumber;  //已归还数量
-
+    @TableField("totalDebt")
+    private double totalDebt; //总欠款
+    @TableField("orderDebt")
+    private double orderDebt; //订单欠款
+    @TableField("orderTotal")
+    private double orderTotal; //订单总金额
+    private double paid; //已付款
+    @TableField("emptyBottleTotal")
+    private double emptyBottleTotal;
     @TableField("createTime")
     private Date createTime;  //创建时间
-
     @TableField("updateTime")
     private Date updateTime; //修改时间
 
-    public static final int STATUS_YES = 1; // 已还清
-    public static final int STATUS_NO = 0; // 未还清
-
-    private int status; //是否还完
 
 }

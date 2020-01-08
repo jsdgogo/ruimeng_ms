@@ -38,5 +38,6 @@ public class OrderItem implements Serializable {
     private double price; //气瓶单价
     @TableField("gasCylinderId")
     private int gasCylinderId;//气瓶id
-
+    @TableField("gasCylinderName")
+    private String gasCylinderName; //气瓶类型
 }

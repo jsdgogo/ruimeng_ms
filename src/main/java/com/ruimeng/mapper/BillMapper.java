@@ -1,7 +1,7 @@
 package com.ruimeng.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.ruimeng.entity.CustomerGasCylinder;
+import com.ruimeng.entity.Bill;
 
 /**
  * <p>
@@ -11,6 +11,6 @@ import com.ruimeng.entity.CustomerGasCylinder;
  * @author JiangShiDing
  * @since 2019-11-27
  */
-public interface CustomerGasCylinderMapper extends BaseMapper<CustomerGasCylinder> {
+public interface BillMapper extends BaseMapper<Bill> {
 
 }

@@ -1,21 +1,44 @@
 /*
  Navicat Premium Data Transfer
 
- Source Server         : 本地
+ Source Server         : localhost_3306
  Source Server Type    : MySQL
- Source Server Version : 50723
+ Source Server Version : 50717
  Source Host           : localhost:3306
  Source Schema         : ms
 
  Target Server Type    : MySQL
- Target Server Version : 50723
+ Target Server Version : 50717
  File Encoding         : 65001
 
- Date: 08/01/2020 00:12:32
+ Date: 08/01/2020 17:56:54
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for bill
+-- ----------------------------
+DROP TABLE IF EXISTS `bill`;
+CREATE TABLE `bill`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `orderTotal` decimal(11, 4) NOT NULL,
+  `orderDebt` decimal(11, 4) NULL DEFAULT NULL,
+  `totalDebt` decimal(11, 4) NULL DEFAULT NULL,
+  `customerId` int(11) NULL DEFAULT NULL,
+  `customerName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `paid` decimal(11, 4) NULL DEFAULT NULL,
+  `createTime` datetime(0) NULL DEFAULT NULL,
+  `updateTime` datetime(0) NULL DEFAULT NULL,
+  `emptyBottleTotal` decimal(11, 4) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of bill
+-- ----------------------------
+INSERT INTO `bill` VALUES (1, 1000.0000, 1000.0000, 1000.0000, 0, NULL, 0.0000, '2020-01-08 17:47:40', '2020-01-08 17:47:40', 0.0000);
 
 -- ----------------------------
 -- Table structure for customer
@@ -54,28 +77,10 @@ INSERT INTO `customer` VALUES (24, NULL, NULL, NULL, NULL, NULL, '2019-12-30 20:
 INSERT INTO `customer` VALUES (25, '12', '123', '321', '32', '132', '2019-12-30 20:34:07', '2019-12-30 20:34:07', DEFAULT);
 
 -- ----------------------------
--- Table structure for customer_gas_cylinder
+-- Table structure for customer_empty_bottle
 -- ----------------------------
-DROP TABLE IF EXISTS `customer_gas_cylinder`;
-CREATE TABLE `customer_gas_cylinder`  (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `gasCylinderId` int(11) NOT NULL,
-  `gasCylinderName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `total` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `customerId` int(11) NOT NULL,
-  `customerName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `sendBackNumber` int(11) NOT NULL,
-  `createTime` datetime(0) NULL DEFAULT NULL,
-  `updateTime` datetime(0) NULL DEFAULT NULL,
-  `status` int(11) NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Table structure for empty_bottle
--- ----------------------------
-DROP TABLE IF EXISTS `empty_bottle`;
-CREATE TABLE `empty_bottle`  (
+DROP TABLE IF EXISTS `customer_empty_bottle`;
+CREATE TABLE `customer_empty_bottle`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `customerName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
   `createTime` datetime(0) NULL DEFAULT NULL,
@@ -92,10 +97,26 @@ CREATE TABLE `empty_bottle`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of empty_bottle
+-- Records of customer_empty_bottle
 -- ----------------------------
-INSERT INTO `empty_bottle` VALUES (9, '撒甲方', '2020-01-01 00:00:00', '2020-01-07 22:22:28', DEFAULT, 3, '气瓶3', 100, 14, 10, 90, 1.0000);
-INSERT INTO `empty_bottle` VALUES (10, '撒甲方', '2020-01-02 00:00:00', '2020-01-07 22:42:01', DEFAULT, 3, '气瓶3', 100, 12, 100, 0, 10.0000);
+INSERT INTO `customer_empty_bottle` VALUES (9, '撒甲方', '2020-01-01 00:00:00', '2020-01-07 22:22:28', DEFAULT, 3, '气瓶3', 100, 14, 10, 90, 1.0000);
+INSERT INTO `customer_empty_bottle` VALUES (10, '撒甲方', '2020-01-02 00:00:00', '2020-01-07 22:42:01', DEFAULT, 3, '气瓶3', 100, 12, 100, 0, 10.0000);
+
+-- ----------------------------
+-- Table structure for empty_bottle
+-- ----------------------------
+DROP TABLE IF EXISTS `empty_bottle`;
+CREATE TABLE `empty_bottle`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `gasCylinderName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `gasCylinderId` int(11) NULL DEFAULT NULL,
+  `number` int(11) NULL DEFAULT NULL,
+  `price` decimal(10, 4) NULL DEFAULT NULL,
+  `createTime` datetime(0) NULL DEFAULT NULL,
+  `updateTime` datetime(0) NULL DEFAULT NULL,
+  `search` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci GENERATED ALWAYS AS (concat_ws(' ',ifnull(`gasCylinderName`,''))) VIRTUAL NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for gas_cylinder
@@ -116,8 +137,8 @@ CREATE TABLE `gas_cylinder`  (
 -- ----------------------------
 -- Records of gas_cylinder
 -- ----------------------------
-INSERT INTO `gas_cylinder` VALUES (1, '气瓶1', '一', 800, 10.0000, '2019-12-15 19:23:45', '2020-01-07 19:38:04', DEFAULT);
-INSERT INTO `gas_cylinder` VALUES (3, '气瓶3', '二', 1000, 11.0000, '2019-12-15 12:14:00', '2020-01-06 21:12:22', DEFAULT);
+INSERT INTO `gas_cylinder` VALUES (1, '气瓶1', '一', 800, 10.0000, '2019-12-15 19:23:45', '2020-01-08 17:33:32', DEFAULT);
+INSERT INTO `gas_cylinder` VALUES (3, '气瓶3', '二', 390, 11.0000, '2019-12-15 12:14:00', '2020-01-08 17:47:40', DEFAULT);
 
 -- ----------------------------
 -- Table structure for order_item
@@ -129,13 +150,14 @@ CREATE TABLE `order_item`  (
   `gasCylinderId` int(11) NOT NULL,
   `quantity` int(11) NOT NULL,
   `price` decimal(11, 0) NOT NULL,
+  `gasCylinderName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 17 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 21 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of order_item
 -- ----------------------------
-INSERT INTO `order_item` VALUES (16, 18, 1, 100, 100);
+INSERT INTO `order_item` VALUES (20, 22, 3, 10, 100, '气瓶3');
 
 -- ----------------------------
 -- Table structure for orders
@@ -146,18 +168,18 @@ CREATE TABLE `orders`  (
   `customerId` int(11) NOT NULL,
   `quantity` int(11) NOT NULL,
   `totalPrice` decimal(10, 4) NOT NULL,
-  `status` int(11) NOT NULL,
+  `paid` decimal(11, 4) NOT NULL,
   `customerName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
   `createTime` datetime(0) NULL DEFAULT NULL,
   `updateTime` datetime(0) NULL DEFAULT NULL,
   `search` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci GENERATED ALWAYS AS (concat_ws(' ',ifnull(`customerId`,''),ifnull(`customerName`,''))) VIRTUAL NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 19 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 23 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of orders
 -- ----------------------------
-INSERT INTO `orders` VALUES (18, 11, 100, 10000.0000, 0, '撒甲方', '2020-01-08 00:00:00', '2020-01-07 19:38:04', DEFAULT);
+INSERT INTO `orders` VALUES (22, 11, 10, 1000.0000, 0.0000, '撒甲方', '2020-01-08 17:47:40', '2020-01-08 17:47:40', DEFAULT);
 
 -- ----------------------------
 -- Table structure for staff

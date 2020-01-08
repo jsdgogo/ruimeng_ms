@@ -8,24 +8,25 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruimeng.dto.CustomerDto;
 import com.ruimeng.dto.OrderDto;
+import com.ruimeng.dto.OrderExcelDto;
 import com.ruimeng.dto.OrderItemDto;
-import com.ruimeng.entity.Customer;
-import com.ruimeng.entity.GasCylinder;
-import com.ruimeng.entity.Orders;
-import com.ruimeng.entity.OrderItem;
-import com.ruimeng.service.CustomerService;
-import com.ruimeng.service.GasCylinderService;
-import com.ruimeng.service.OrderItemService;
-import com.ruimeng.service.OrderService;
+import com.ruimeng.entity.*;
+import com.ruimeng.service.*;
 import com.ruimeng.util.DateUtil;
+import com.ruimeng.util.ExcelUtil;
 import com.ruimeng.vo.PageParam;
 import com.ruimeng.vo.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,6 +44,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("order")
 @Slf4j
+@Transactional
 public class OrderController {
 
     @Autowired
@@ -53,18 +55,22 @@ public class OrderController {
     private CustomerService customerService;
     @Autowired
     private GasCylinderService gasCylinderService;
+    @Autowired
+    private BillService billService;
 
     @PostMapping("save")
     public Result save(@RequestBody String orderInfo) throws ParseException {
         Map map = JSON.parseObject(orderInfo, Map.class);
         Object object = map.get("orderInfo");
         String string = JSON.toJSONString(object);
-        TypeReference<OrderDto> type = new TypeReference<OrderDto>() {};
+        TypeReference<OrderDto> type = new TypeReference<OrderDto>() {
+        };
         OrderDto orderDto = JSON.parseObject(string, type);
         CustomerDto customer = orderDto.getCustomer();
         List<OrderItemDto> orderItems = orderDto.getOrderItems();
         String createTimeStr = orderDto.getCreateTimeStr();
         Orders order = new Orders();
+        order.setPaid(orderDto.getPaid());
         order.setCustomerId(customer.getCustomerId());
         order.setCustomerName(customer.getCustomerName());
         order.setCreateTime(new Date());
@@ -76,28 +82,51 @@ public class OrderController {
         double totalPrice = 0;
         List<OrderItem> orderItemList = new ArrayList<>();
         for (OrderItemDto orderItemDto : orderItems) {
-            quantity+=orderItemDto.getQuantity();
-            totalPrice+=orderItemDto.getPrice()*orderItemDto.getQuantity();
+            quantity += orderItemDto.getQuantity();
+            totalPrice += orderItemDto.getPrice() * orderItemDto.getQuantity();
             OrderItem orderItem = new OrderItem();
             orderItem.setGasCylinderId(orderItemDto.getGasCylinderId());
             orderItem.setPrice(orderItemDto.getPrice());
             orderItem.setQuantity(orderItemDto.getQuantity());
             orderItemList.add(orderItem);
         }
-        order.setStatus(Orders.STATUS_NO);
         order.setQuantity(quantity);
         order.setTotalPrice(totalPrice);
-        if (orderService.save(order)){
+        if (orderService.save(order)) {
+            QueryWrapper<Bill> queryWrapper = new QueryWrapper<>();
             for (OrderItem orderItem : orderItemList) {
                 orderItem.setOrderId(order.getId());
                 GasCylinder gasCylinder = gasCylinderService.getById(orderItem.getGasCylinderId());
+                orderItem.setGasCylinderName(gasCylinder.getName());
                 int inventory = gasCylinder.getInventory();
-                inventory-=orderItem.getQuantity();
+                inventory -= orderItem.getQuantity();
                 gasCylinder.setInventory(inventory);
                 gasCylinder.setUpdateTime(new Date());
                 gasCylinderService.updateById(gasCylinder);
             }
             orderItemService.saveBatch(orderItemList);
+            queryWrapper.eq("customerId", order.getCustomerId());
+            Bill bill = billService.getOne(queryWrapper);
+            if (bill==null){
+                bill = new Bill();
+                bill.setCreateTime(new Date());
+                bill.setCustomerId(order.getCustomerId());
+                bill.setCustomerName(order.getCustomerName());
+            }
+            bill.setUpdateTime(new Date());
+            double orderTotal = bill.getOrderTotal();
+            orderTotal+=order.getTotalPrice();
+            bill.setOrderTotal(orderTotal);
+            double paid = bill.getPaid();
+            paid+=order.getPaid();
+            bill.setPaid(paid);
+            double orderDebt = bill.getOrderDebt();
+            orderDebt+=(order.getTotalPrice()-order.getPaid());
+            bill.setOrderDebt(orderDebt);
+            double emptyBottleTotal = bill.getEmptyBottleTotal();
+            double totalDebt = orderTotal - paid + emptyBottleTotal;
+            bill.setTotalDebt(totalDebt);
+            billService.saveOrUpdate(bill);
             return Result.ok();
         }
         return Result.error();
@@ -107,6 +136,9 @@ public class OrderController {
     @GetMapping("deleteById")
     public Result deleteById(int id) {
         if (orderService.removeById(id)) {
+            QueryWrapper<OrderItem> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("orderId", id);
+            orderItemService.remove(queryWrapper);
             return Result.ok();
         }
         return Result.error();
@@ -117,12 +149,14 @@ public class OrderController {
         Map map = JSON.parseObject(orderInfo, Map.class);
         Object object = map.get("orderInfo");
         String string = JSON.toJSONString(object);
-        TypeReference<OrderDto> type = new TypeReference<OrderDto>() {};
+        TypeReference<OrderDto> type = new TypeReference<OrderDto>() {
+        };
         OrderDto orderDto = JSON.parseObject(string, type);
         CustomerDto customer = orderDto.getCustomer();
         List<OrderItemDto> orderItems = orderDto.getOrderItems();
         String createTimeStr = orderDto.getCreateTimeStr();
         Orders order = new Orders();
+        order.setPaid(orderDto.getPaid());
         order.setId(orderDto.getId());
         order.setCustomerId(customer.getCustomerId());
         order.setCustomerName(customer.getCustomerName());
@@ -134,8 +168,8 @@ public class OrderController {
         double totalPrice = 0;
         List<OrderItem> orderItemList = new ArrayList<>();
         for (OrderItemDto orderItemDto : orderItems) {
-            quantity+=orderItemDto.getQuantity();
-            totalPrice+=orderItemDto.getPrice()*orderItemDto.getQuantity();
+            quantity += orderItemDto.getQuantity();
+            totalPrice += orderItemDto.getPrice() * orderItemDto.getQuantity();
             OrderItem orderItem = new OrderItem();
             orderItem.setGasCylinderId(orderItemDto.getGasCylinderId());
             orderItem.setPrice(orderItemDto.getPrice());
@@ -144,22 +178,45 @@ public class OrderController {
             orderItem.setId(orderItemDto.getId());
             orderItemList.add(orderItem);
         }
-        order.setStatus(Orders.STATUS_NO);
         order.setQuantity(quantity);
         order.setTotalPrice(totalPrice);
-        if (orderService.updateById(order)){
-                for (OrderItem orderItem : orderItemList) {
-                    OrderItem oldOrderItem = orderItemService.getById(orderItem.getId());
-                    GasCylinder gasCylinder = gasCylinderService.getById(orderItem.getGasCylinderId());
-                    int inventory = gasCylinder.getInventory();
-                    inventory+=oldOrderItem.getQuantity();
-                    inventory -= orderItem.getQuantity();
-                    gasCylinder.setInventory(inventory);
-                    gasCylinder.setUpdateTime(new Date());
-                    gasCylinderService.updateById(gasCylinder);
-                    orderItemService.updateById(orderItem);
-                }
-                return Result.ok();
+        if (orderService.updateById(order)) {
+            QueryWrapper<Bill> queryWrapper = new QueryWrapper<>();
+            for (OrderItem orderItem : orderItemList) {
+                OrderItem oldOrderItem = orderItemService.getById(orderItem.getId());
+                GasCylinder gasCylinder = gasCylinderService.getById(orderItem.getGasCylinderId());
+                orderItem.setGasCylinderName(gasCylinder.getName());
+                int inventory = gasCylinder.getInventory();
+                inventory += oldOrderItem.getQuantity();
+                inventory -= orderItem.getQuantity();
+                gasCylinder.setInventory(inventory);
+                gasCylinder.setUpdateTime(new Date());
+                gasCylinderService.updateById(gasCylinder);
+                orderItemService.updateById(orderItem);
+            }
+            queryWrapper.eq("customerId", order.getCustomerId());
+            Bill bill = billService.getOne(queryWrapper);
+            if (bill==null){
+                bill = new Bill();
+                bill.setCreateTime(new Date());
+                bill.setCustomerId(order.getCustomerId());
+                bill.setCustomerName(order.getCustomerName());
+            }
+            bill.setUpdateTime(new Date());
+            double orderTotal = bill.getOrderTotal();
+            orderTotal+=order.getTotalPrice();
+            bill.setOrderTotal(orderTotal);
+            double paid = bill.getPaid();
+            paid+=order.getPaid();
+            bill.setPaid(paid);
+            double orderDebt = bill.getOrderDebt();
+            orderDebt+=(order.getTotalPrice()-order.getPaid());
+            bill.setOrderDebt(orderDebt);
+            double emptyBottleTotal = bill.getEmptyBottleTotal();
+            double totalDebt = orderTotal - paid + emptyBottleTotal;
+            bill.setTotalDebt(totalDebt);
+            billService.saveOrUpdate(bill);
+            return Result.ok();
         }
         return Result.error();
     }
@@ -191,10 +248,10 @@ public class OrderController {
     @GetMapping("getById")
     public Result getById(int id) {
         Orders order = orderService.getById(id);
-        if (order!=null) {
+        if (order != null) {
             OrderDto orderDto = new OrderDto();
             String createTime = DateUtil.dateToString(order.getCreateTime());
-            if (StringUtils.isNotBlank(createTime)){
+            if (StringUtils.isNotBlank(createTime)) {
                 orderDto.setCreateTimeStr(createTime);
             }
             orderDto.setId(order.getId());
@@ -209,7 +266,7 @@ public class OrderController {
             QueryWrapper<OrderItem> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("orderId", order.getId());
             List<OrderItem> orderItems = orderItemService.list(queryWrapper);
-            if (orderItems!=null&&!orderItems.isEmpty()) {
+            if (orderItems != null && !orderItems.isEmpty()) {
                 List<OrderItemDto> orderItemDtos = new ArrayList<>();
                 for (OrderItem orderItem : orderItems) {
                     OrderItemDto orderItemDto = new OrderItemDto();
@@ -218,7 +275,7 @@ public class OrderController {
                     orderItemDto.setPrice(orderItem.getPrice());
                     orderItemDto.setQuantity(orderItem.getQuantity());
                     GasCylinder gasCylinder = gasCylinderService.getById(orderItem.getGasCylinderId());
-                    if (gasCylinder!=null){
+                    if (gasCylinder != null) {
                         orderItemDto.setInventory(gasCylinder.getInventory());
                         orderItemDto.setName(gasCylinder.getName());
                     }
@@ -230,55 +287,65 @@ public class OrderController {
         }
         return Result.error();
     }
-    //excel1
-//    @GetMapping("exportCustomerOrder")
-//    public void exportCustomerOrder(String keepshopId, String startTimeStr, String endTimeStr,
-//                                    HttpServletResponse response) {
-//        Date startTime = null;
-//        Date endTime = null;
-//        Workbook workbook = null;
-//        try {
-//            if (StringUtils.isNotBlank(startTimeStr)) {
-//                startTime = StringToDateUtil.stringToDate(startTimeStr);
-//            }
-//            if (StringUtils.isNotBlank(endTimeStr)) {
-//                endTime = StringToDateUtil.stringToDate(endTimeStr);
-//            }
-//            int loginShopId = Integer.parseInt(keepshopId);
-//            List<Map<String, Object>> list = orderService.findOrderItem(Integer.parseInt(keepshopId), startTime,
-//                    endTime);
-//            List<Map<String, Object>> newList = new ArrayList<>();
-//            for (Map<String, Object> map : list) {
-//                if ((int) map.get("isAllocation") == Orders.ISALLOCATION_FALSE) {
-//                    setMapParams(map, loginShopId);
-//                    newList.add(map);
-//                }
-//            }
-//            String[] consumerTitles = { "订单ID", "订单日期", "终端客户", "客户ERP编码", "平台商品ID", "产品外部编码", "产品名称", "规格", "包装", "厂家",
-//                    "批准文号", "批号", "效期", "单位", "单价", "数量", "金额", "活动类型", "订单类型", "调拨价", "送货店铺", "自营店铺", "支付方式", "订单状态",
-//                    "erp单号反馈" };
-//            String[] params = { "orderId", "createTime", "createrName", "createrErpNumber", "itemId", "commoditCode",
-//                    "title1", "title2", "largeScale", "manufacturer", "licenseNumber", "batchCode", "expiryTime",
-//                    "basicUnit", "calcuPrice", "quantity", "total", "proType", "logisType", "transferPrice", "shopName",
-//                    "logisShopName", "payType", "status", "" };
-//            workbook = ExcelUtil.createExecl(consumerTitles, params, newList);
-//            String fileName = "终端订单明细查询.xlsx"; // 创建文件名
-//            String fileNameURL = URLEncoder.encode(fileName, "UTF-8");
-//            response.setContentType("application/ms-excel;charset=UTF-8"); // 设置ContentType
-//            response.setHeader("Content-disposition",
-//                    "attachment;filename=" + fileNameURL + ";" + "filename*=utf-8''" + fileNameURL);
-//            workbook.write(response.getOutputStream());
-//        } catch (Exception e) {
-//            log.error("异常", e);
-//        } finally {
-//            if (workbook != null) {
-//                try {
-//                    workbook.close();
-//                } catch (IOException e) {
-//                    log.error("异常", e);
-//                }
-//            }
-//        }
-//    }
+
+    @GetMapping("exportOrder")
+    public void exportOrder(String beginTime, String endTime,
+                                    HttpServletResponse response) {
+        QueryWrapper<Orders> queryWrapper = new QueryWrapper<>();
+        Workbook workbook = null;
+        try {
+            //创建时间大于等于开始时间
+            if (StringUtils.isNotBlank(beginTime)) {
+                Date startDate = DateUtil.stringToDate(beginTime);
+                queryWrapper.ge("createTime", startDate);
+            }
+            //创建时间小于等于结束时间
+            if (StringUtils.isNotBlank(endTime)) {
+                Date endDate = DateUtil.stringToDate(endTime);
+                queryWrapper.le("createTime", endDate);
+            }
+            List<Orders> orders = orderService.list(queryWrapper);
+            QueryWrapper<OrderItem> orderItemQueryWrapper = new QueryWrapper<>();
+            List<OrderExcelDto> orderExcelDtos = new ArrayList<>();
+            for (Orders order : orders) {
+                queryWrapper.eq("orderId", order.getId());
+                List<OrderItem> orderItems = orderItemService.list(orderItemQueryWrapper);
+                for (OrderItem orderItem : orderItems) {
+                    OrderExcelDto orderExcelDto = new OrderExcelDto();
+                    orderExcelDto.setId(order.getId());
+                    orderExcelDto.setCustomerId(order.getCustomerId());
+                    orderExcelDto.setCustomerName(order.getCustomerName());
+                    orderExcelDto.setCreateTime(order.getCreateTime());
+                    orderExcelDto.setGasCylinderId(orderItem.getGasCylinderId());
+                    orderExcelDto.setGasCylinderName(orderItem.getGasCylinderName());
+                    orderExcelDto.setPrice(orderItem.getPrice());
+                    orderExcelDto.setTotal(order.getQuantity());
+                    orderExcelDto.setQuantity(orderItem.getQuantity());
+                    orderExcelDto.setTotalPrice(order.getTotalPrice());
+                    orderExcelDtos.add(orderExcelDto);
+                }
+            }
+            String[] consumerTitles = {"订单ID", "订单日期", "客户id", "客户名称", "气瓶id", "气瓶类型", "购买数量", "单价", "订单总数量", "订单总金额"};
+            String[] params = {"id", "createTime", "customerId", "customerName", "gasCylinderId", "gasCylinderName",
+                    "price", "quantity", "total", "totalPrice"};
+            workbook = ExcelUtil.createExecl(consumerTitles, params, orderExcelDtos);
+            String fileName = "订单详情查询.xlsx"; // 创建文件名
+            String fileNameURL = URLEncoder.encode(fileName, "UTF-8");
+            response.setContentType("application/ms-excel;charset=UTF-8"); // 设置ContentType
+            response.setHeader("Content-disposition",
+                    "attachment;filename=" + fileNameURL + ";" + "filename*=utf-8''" + fileNameURL);
+            workbook.write(response.getOutputStream());
+        } catch (Exception e) {
+            log.error("异常", e);
+        } finally {
+            if (workbook != null) {
+                try {
+                    workbook.close();
+                } catch (IOException e) {
+                    log.error("异常", e);
+                }
+            }
+        }
+    }
 }
 
