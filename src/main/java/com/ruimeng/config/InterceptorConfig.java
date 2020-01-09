@@ -53,14 +53,17 @@ public class InterceptorConfig implements WebMvcConfigurer {
                 response.setStatus(204);
                 return false;
             }
-//            User user = getByToken(request);
-//            if (user == null) {
-//                Result result = Result.setResult(ResultCodeEnum.NO_USER_ERROR);
-//                String resultJson = JSONObject.toJSONString(result);
-//                returnJson(response, resultJson);
-//                log.info("已成功拦截并转发跳转");
-//                return false;
-//            }
+            User user = getByToken(request);
+            if (user == null) {
+                if (request.getServletPath().equals("/order/exportOrder")||request.getServletPath().equals("/bill/exportBill")){
+                    return true;
+                }
+                Result result = Result.setResult(ResultCodeEnum.NO_USER_ERROR);
+                String resultJson = JSONObject.toJSONString(result);
+                returnJson(response, resultJson);
+                log.info("已成功拦截并转发跳转");
+                return false;
+            }
             return true;
         }
 

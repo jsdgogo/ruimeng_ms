@@ -351,7 +351,7 @@ public class OrderController {
             String[] params = {"id", "createTime", "customerId", "customerName", "gasCylinderId", "gasCylinderName",
                     "price", "quantity", "total", "totalPrice"};
             workbook = ExcelUtil.createExecl(consumerTitles, params, orderExcelDtos);
-            String fileName = "订单详情查询.xlsx"; // 创建文件名
+            String fileName = "订单详情报表.xlsx"; // 创建文件名
             String fileNameURL = URLEncoder.encode(fileName, "UTF-8");
             response.setContentType("application/ms-excel;charset=UTF-8"); // 设置ContentType
             response.setHeader("Content-disposition",

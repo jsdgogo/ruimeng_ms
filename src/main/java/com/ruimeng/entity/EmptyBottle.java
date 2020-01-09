@@ -30,8 +30,10 @@ public class EmptyBottle implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private int id;
 
+    @TableField("gasCylinderId")
     private int gasCylinderId; //气瓶id
 
+    @TableField("gasCylinderName")
     private String gasCylinderName; //气瓶名
 
     private int number; //空瓶数量
