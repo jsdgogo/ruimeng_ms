@@ -51,7 +51,7 @@ public class CustomerEmptyBottleController {
             QueryWrapper<Bill> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("customerId", customerEmptyBottle.getCustomerId());
             Bill bill = billService.getOne(queryWrapper);
-            if (bill==null){
+            if (bill == null) {
                 bill = new Bill();
                 bill.setCreateTime(new Date());
                 bill.setCustomerId(customerEmptyBottle.getCustomerId());
@@ -59,7 +59,7 @@ public class CustomerEmptyBottleController {
             }
             bill.setUpdateTime(new Date());
             double emptyBottleTotal = bill.getEmptyBottleTotal();
-            emptyBottleTotal+=customerEmptyBottle.getPrice()*customerEmptyBottle.getNowNumber();
+            emptyBottleTotal += customerEmptyBottle.getPrice() * customerEmptyBottle.getNowNumber();
             bill.setEmptyBottleTotal(emptyBottleTotal);
             double totalDebt = bill.getTotalDebt() - emptyBottleTotal;
             bill.setTotalDebt(totalDebt);
@@ -86,22 +86,35 @@ public class CustomerEmptyBottleController {
         int sendBackNumber = customerEmptyBottle.getSendBackNumber();
         int total = customerEmptyBottle.getTotal();
         customerEmptyBottle.setNowNumber(total - sendBackNumber);
+        CustomerEmptyBottle oldCustomerEmptyBottle = customerEmptyBottleService.getById(customerEmptyBottle.getId());
         if (customerEmptyBottleService.updateById(customerEmptyBottle)) {
             QueryWrapper<Bill> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("customerId", customerEmptyBottle.getCustomerId());
             Bill bill = billService.getOne(queryWrapper);
-            if (bill==null){
+            if (bill == null) {
                 bill = new Bill();
                 bill.setCreateTime(new Date());
                 bill.setCustomerId(customerEmptyBottle.getCustomerId());
                 bill.setCustomerName(customerEmptyBottle.getCustomerName());
+                bill.setEmptyBottleTotal(customerEmptyBottle.getPrice() * customerEmptyBottle.getNowNumber());
+                bill.setTotalDebt(bill.getEmptyBottleTotal());
+            } else {
+                double oldCustomerEmptyBottlePrice = oldCustomerEmptyBottle.getPrice();
+                int oldCustomerEmptyBottleNowNumber = oldCustomerEmptyBottle.getNowNumber();
+                double customerEmptyBottlePrice = customerEmptyBottle.getPrice();
+                int customerEmptyBottleNowNumber = customerEmptyBottle.getNowNumber();
+                double addCustomerBottlePrice = customerEmptyBottlePrice - oldCustomerEmptyBottlePrice  ;
+                int addCustomerEmptyBottleNowNumber = customerEmptyBottleNowNumber - oldCustomerEmptyBottleNowNumber ;
+                double emptyBottleTotal = bill.getEmptyBottleTotal();
+                double addEmptyBottleTotal = addCustomerBottlePrice * addCustomerEmptyBottleNowNumber;
+                emptyBottleTotal += addEmptyBottleTotal;
+                bill.setEmptyBottleTotal(emptyBottleTotal);
+
+                double totalDebt = bill.getTotalDebt() + addEmptyBottleTotal;
+                bill.setTotalDebt(totalDebt);
             }
             bill.setUpdateTime(new Date());
-            double emptyBottleTotal = bill.getEmptyBottleTotal();
-            emptyBottleTotal+=customerEmptyBottle.getPrice()*customerEmptyBottle.getNowNumber();
-            bill.setEmptyBottleTotal(emptyBottleTotal);
-            double totalDebt = bill.getTotalDebt() - emptyBottleTotal;
-            bill.setTotalDebt(totalDebt);
+
             billService.saveOrUpdate(bill);
             return Result.ok();
         }

@@ -45,22 +45,22 @@ public class InterceptorConfig implements WebMvcConfigurer {
          * 请求执行前执行
          */
         @Override
-        public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object o){
-            crossDomain(request,response);
+        public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object o) {
+            crossDomain(request, response);
             if (request.getMethod().equals(RequestMethod.OPTIONS.name())) {
                 response.setContentType("text/plain, charset=utf-8");
                 response.setContentLength(0);
                 response.setStatus(204);
                 return false;
             }
-            User user = getByToken(request);
-            if (user == null) {
-                Result result = Result.setResult(ResultCodeEnum.NO_USER_ERROR);
-                String resultJson = JSONObject.toJSONString(result);
-                returnJson(response, resultJson);
-                log.info("已成功拦截并转发跳转");
-                return false;
-            }
+//            User user = getByToken(request);
+//            if (user == null) {
+//                Result result = Result.setResult(ResultCodeEnum.NO_USER_ERROR);
+//                String resultJson = JSONObject.toJSONString(result);
+//                returnJson(response, resultJson);
+//                log.info("已成功拦截并转发跳转");
+//                return false;
+//            }
             return true;
         }
 
@@ -79,7 +79,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
          * 请求结束执行
          */
         @Override
-        public void postHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, ModelAndView modelAndView)  {
+        public void postHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, ModelAndView modelAndView) {
         }
 
         /**
@@ -89,7 +89,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
         public void afterCompletion(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, Exception e) {
         }
 
-                /**
+        /**
          * 跨域处理
          */
         public void crossDomain(HttpServletRequest request, HttpServletResponse response) {
@@ -98,7 +98,8 @@ public class InterceptorConfig implements WebMvcConfigurer {
             response.setHeader("Access-Control-Allow-Headers", "*");
 
         }
-        private void returnJson(HttpServletResponse response, String json){
+
+        private void returnJson(HttpServletResponse response, String json) {
             PrintWriter writer = null;
             response.setCharacterEncoding("UTF-8");
             response.setContentType("text/html; charset=utf-8");

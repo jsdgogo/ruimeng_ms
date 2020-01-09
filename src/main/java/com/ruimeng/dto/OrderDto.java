@@ -11,4 +11,5 @@ public class OrderDto {
     private List<OrderItemDto> orderItems;
     private String createTimeStr;
     private double paid;
+    private double total;
 }

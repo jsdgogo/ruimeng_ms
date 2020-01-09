@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -84,7 +83,7 @@ public class OrderController {
         for (OrderItemDto orderItemDto : orderItems) {
             quantity += orderItemDto.getQuantity();
             double total = orderItemDto.getPrice() * orderItemDto.getQuantity();
-            totalPrice+=total;
+            totalPrice += total;
             OrderItem orderItem = new OrderItem();
             orderItem.setGasCylinderId(orderItemDto.getGasCylinderId());
             orderItem.setPrice(orderItemDto.getPrice());
@@ -108,7 +107,7 @@ public class OrderController {
             orderItemService.saveBatch(orderItemList);
             queryWrapper.eq("customerId", order.getCustomerId());
             Bill bill = billService.getOne(queryWrapper);
-            if (bill==null){
+            if (bill == null) {
                 bill = new Bill();
                 bill.setCreateTime(new Date());
                 bill.setCustomerId(order.getCustomerId());
@@ -116,13 +115,13 @@ public class OrderController {
             }
             bill.setUpdateTime(new Date());
             double orderTotal = bill.getOrderTotal();
-            orderTotal+=order.getTotalPrice();
+            orderTotal += order.getTotalPrice();
             bill.setOrderTotal(orderTotal);
             double paid = bill.getPaid();
-            paid+=order.getPaid();
+            paid += order.getPaid();
             bill.setPaid(paid);
             double orderDebt = bill.getOrderDebt();
-            orderDebt+=(order.getTotalPrice()-order.getPaid());
+            orderDebt += (order.getTotalPrice() - order.getPaid());
             bill.setOrderDebt(orderDebt);
             double emptyBottleTotal = bill.getEmptyBottleTotal();
             double totalDebt = orderTotal - paid + emptyBottleTotal;
@@ -165,9 +164,6 @@ public class OrderController {
         if (StringUtils.isNotBlank(createTimeStr)) {
             order.setCreateTime(DateUtil.stringToDate(createTimeStr));
         }
-        QueryWrapper<OrderItem> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("orderId", order.getId());
-        if (orderItemService.remove(queryWrapper)){
         int quantity = 0;
         double totalPrice = 0;
         List<OrderItem> orderItemList = new ArrayList<>();
@@ -179,50 +175,68 @@ public class OrderController {
             orderItem.setPrice(orderItemDto.getPrice());
             orderItem.setOrderId(order.getId());
             orderItem.setQuantity(orderItemDto.getQuantity());
+            orderItem.setId(orderItemDto.getId());
             orderItemList.add(orderItem);
+
+            OrderItem oldOrderItem = orderItemService.getById(orderItem.getId());
+            GasCylinder gasCylinder = gasCylinderService.getById(orderItem.getGasCylinderId());
+            orderItem.setGasCylinderName(gasCylinder.getName());
+            int inventory = gasCylinder.getInventory();
+            if (oldOrderItem != null) {
+                inventory += oldOrderItem.getQuantity();
+            }
+            inventory -= orderItem.getQuantity();
+            gasCylinder.setInventory(inventory);
+            gasCylinder.setUpdateTime(new Date());
+            gasCylinderService.updateById(gasCylinder);
         }
         order.setQuantity(quantity);
         order.setTotalPrice(totalPrice);
+        Orders oldOrder = orderService.getById(order.getId());
         if (orderService.updateById(order)) {
             QueryWrapper<Bill> billQueryWrapper = new QueryWrapper<>();
-            for (OrderItem orderItem : orderItemList) {
-                OrderItem oldOrderItem = orderItemService.getById(orderItem.getId());
-                GasCylinder gasCylinder = gasCylinderService.getById(orderItem.getGasCylinderId());
-                orderItem.setGasCylinderName(gasCylinder.getName());
-                int inventory = gasCylinder.getInventory();
-                if (oldOrderItem!=null){
-                    inventory += oldOrderItem.getQuantity();
-                }
-                inventory -= orderItem.getQuantity();
-                gasCylinder.setInventory(inventory);
-                gasCylinder.setUpdateTime(new Date());
-                gasCylinderService.updateById(gasCylinder);
-                orderItemService.save(orderItem);
-            }
-            queryWrapper.eq("customerId", order.getCustomerId());
+            QueryWrapper<OrderItem> orderItemQueryWrapper = new QueryWrapper<>();
+            orderItemQueryWrapper.eq("orderId", order.getId());
+            orderItemService.remove(orderItemQueryWrapper);
+            orderItemService.saveBatch(orderItemList);
+            billQueryWrapper.eq("customerId", order.getCustomerId());
             Bill bill = billService.getOne(billQueryWrapper);
-            if (bill==null){
+            if (bill == null) {
                 bill = new Bill();
                 bill.setCreateTime(new Date());
                 bill.setCustomerId(order.getCustomerId());
                 bill.setCustomerName(order.getCustomerName());
+                bill.setOrderTotal(order.getTotalPrice());
+                bill.setPaid(order.getPaid());
+                bill.setOrderDebt(order.getTotalPrice() - order.getPaid());
+                bill.setTotalDebt(bill.getOrderDebt());
+            } else {
+                double oldOrderPaid = oldOrder.getPaid();
+                double oldOrderTotalPrice = oldOrder.getTotalPrice();
+                double orderPaid = order.getPaid();
+                double orderTotalPrice = order.getTotalPrice();
+                double addPaid = orderPaid - oldOrderPaid;
+                double addTotalPrice = orderTotalPrice - oldOrderTotalPrice;
+                double orderTotal = bill.getOrderTotal();
+                orderTotal += addTotalPrice;
+                bill.setOrderTotal(orderTotal);
+
+                double paid = bill.getPaid();
+                paid += addPaid;
+                bill.setPaid(paid);
+
+                double addDebt = addTotalPrice - addPaid;
+                double orderDebt = bill.getOrderDebt();
+                orderDebt += addDebt;
+                bill.setOrderDebt(orderDebt);
+
+                double totalDebt = bill.getTotalDebt();
+                totalDebt += addDebt;
+                bill.setTotalDebt(totalDebt);
             }
             bill.setUpdateTime(new Date());
-            double orderTotal = bill.getOrderTotal();
-            orderTotal+=order.getTotalPrice();
-            bill.setOrderTotal(orderTotal);
-            double paid = bill.getPaid();
-            paid+=order.getPaid();
-            bill.setPaid(paid);
-            double orderDebt = bill.getOrderDebt();
-            orderDebt+=(order.getTotalPrice()-order.getPaid());
-            bill.setOrderDebt(orderDebt);
-            double emptyBottleTotal = bill.getEmptyBottleTotal();
-            double totalDebt = orderTotal - paid + emptyBottleTotal;
-            bill.setTotalDebt(totalDebt);
             billService.saveOrUpdate(bill);
             return Result.ok();
-        }
         }
         return Result.error();
     }
@@ -261,6 +275,8 @@ public class OrderController {
                 orderDto.setCreateTimeStr(createTime);
             }
             orderDto.setId(order.getId());
+            orderDto.setPaid(order.getPaid());
+            orderDto.setTotal(order.getTotalPrice());
             Customer customer = customerService.getById(order.getCustomerId());
             CustomerDto customerDto = new CustomerDto();
             if (customer != null) {
@@ -296,7 +312,7 @@ public class OrderController {
 
     @GetMapping("exportOrder")
     public void exportOrder(String beginTime, String endTime,
-                                    HttpServletResponse response) {
+                            HttpServletResponse response) {
         QueryWrapper<Orders> queryWrapper = new QueryWrapper<>();
         Workbook workbook = null;
         try {
