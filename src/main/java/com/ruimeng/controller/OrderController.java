@@ -93,7 +93,10 @@ public class OrderController {
         order.setQuantity(quantity);
         order.setTotalPrice(totalPrice);
         if (orderService.save(order)) {
-            QueryWrapper<Bill> queryWrapper = new QueryWrapper<>();
+            QueryWrapper<Bill> billQueryWrapper = new QueryWrapper<>();
+            billQueryWrapper.eq("customerId", order.getCustomerId());
+            QueryWrapper<Orders> ordersQueryWrapper = new QueryWrapper<>();
+            ordersQueryWrapper.eq("customerId", order.getCustomerId());
             for (OrderItem orderItem : orderItemList) {
                 orderItem.setOrderId(order.getId());
                 GasCylinder gasCylinder = gasCylinderService.getById(orderItem.getGasCylinderId());
@@ -105,28 +108,32 @@ public class OrderController {
                 gasCylinderService.updateById(gasCylinder);
             }
             orderItemService.saveBatch(orderItemList);
-            queryWrapper.eq("customerId", order.getCustomerId());
-            Bill bill = billService.getOne(queryWrapper);
-            if (bill == null) {
-                bill = new Bill();
-                bill.setCreateTime(new Date());
-                bill.setCustomerId(order.getCustomerId());
-                bill.setCustomerName(order.getCustomerName());
+
+            List<Orders> orders = orderService.list(ordersQueryWrapper);
+            Bill oldBill = billService.getOne(billQueryWrapper);
+            Bill newBill = new Bill();
+            double orderTotal = 0;
+            double paid = 0;
+            for (Orders orderByCustomerId : orders) {
+                orderTotal += orderByCustomerId.getTotalPrice();
+                paid += orderByCustomerId.getPaid();
             }
-            bill.setUpdateTime(new Date());
-            double orderTotal = bill.getOrderTotal();
-            orderTotal += order.getTotalPrice();
-            bill.setOrderTotal(orderTotal);
-            double paid = bill.getPaid();
-            paid += order.getPaid();
-            bill.setPaid(paid);
-            double orderDebt = bill.getOrderDebt();
-            orderDebt += (order.getTotalPrice() - order.getPaid());
-            bill.setOrderDebt(orderDebt);
-            double emptyBottleTotal = bill.getEmptyBottleTotal();
-            double totalDebt = orderTotal - paid + emptyBottleTotal;
-            bill.setTotalDebt(totalDebt);
-            billService.saveOrUpdate(bill);
+            newBill.setCreateTime(new Date());
+            newBill.setUpdateTime(new Date());
+            newBill.setCustomerId(order.getCustomerId());
+            newBill.setCustomerName(order.getCustomerName());
+            if (oldBill != null) {
+                newBill.setEmptyBottleTotal(oldBill.getEmptyBottleTotal());
+                newBill.setCreateTime(oldBill.getCreateTime());
+            }
+            newBill.setOrderTotal(orderTotal);
+            newBill.setPaid(paid);
+            double orderDebt = orderTotal - paid;
+            newBill.setOrderDebt(orderDebt);
+            double totalDebt = orderDebt + newBill.getEmptyBottleTotal();
+            newBill.setTotalDebt(totalDebt);
+            billService.remove(billQueryWrapper);
+            billService.save(newBill);
             return Result.ok();
         }
         return Result.error();
@@ -138,6 +145,15 @@ public class OrderController {
         if (orderService.removeById(id)) {
             QueryWrapper<OrderItem> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("orderId", id);
+            List<OrderItem> orderItems = orderItemService.list(queryWrapper);
+            for (OrderItem orderItem : orderItems) {
+                GasCylinder gasCylinder = gasCylinderService.getById(orderItem.getGasCylinderId());
+                int inventory = gasCylinder.getInventory();
+                inventory -= orderItem.getQuantity();
+                gasCylinder.setInventory(inventory);
+                gasCylinder.setUpdateTime(new Date());
+                gasCylinderService.updateById(gasCylinder);
+            }
             orderItemService.remove(queryWrapper);
             return Result.ok();
         }
@@ -192,50 +208,44 @@ public class OrderController {
         }
         order.setQuantity(quantity);
         order.setTotalPrice(totalPrice);
-        Orders oldOrder = orderService.getById(order.getId());
         if (orderService.updateById(order)) {
             QueryWrapper<Bill> billQueryWrapper = new QueryWrapper<>();
+            billQueryWrapper.eq("customerId", order.getCustomerId());
+
+            QueryWrapper<Orders> ordersQueryWrapper = new QueryWrapper<>();
+            ordersQueryWrapper.eq("customerId", order.getCustomerId());
+
             QueryWrapper<OrderItem> orderItemQueryWrapper = new QueryWrapper<>();
             orderItemQueryWrapper.eq("orderId", order.getId());
+
             orderItemService.remove(orderItemQueryWrapper);
             orderItemService.saveBatch(orderItemList);
-            billQueryWrapper.eq("customerId", order.getCustomerId());
-            Bill bill = billService.getOne(billQueryWrapper);
-            if (bill == null) {
-                bill = new Bill();
-                bill.setCreateTime(new Date());
-                bill.setCustomerId(order.getCustomerId());
-                bill.setCustomerName(order.getCustomerName());
-                bill.setOrderTotal(order.getTotalPrice());
-                bill.setPaid(order.getPaid());
-                bill.setOrderDebt(order.getTotalPrice() - order.getPaid());
-                bill.setTotalDebt(bill.getOrderDebt());
-            } else {
-                double oldOrderPaid = oldOrder.getPaid();
-                double oldOrderTotalPrice = oldOrder.getTotalPrice();
-                double orderPaid = order.getPaid();
-                double orderTotalPrice = order.getTotalPrice();
-                double addPaid = orderPaid - oldOrderPaid;
-                double addTotalPrice = orderTotalPrice - oldOrderTotalPrice;
-                double orderTotal = bill.getOrderTotal();
-                orderTotal += addTotalPrice;
-                bill.setOrderTotal(orderTotal);
 
-                double paid = bill.getPaid();
-                paid += addPaid;
-                bill.setPaid(paid);
-
-                double addDebt = addTotalPrice - addPaid;
-                double orderDebt = bill.getOrderDebt();
-                orderDebt += addDebt;
-                bill.setOrderDebt(orderDebt);
-
-                double totalDebt = bill.getTotalDebt();
-                totalDebt += addDebt;
-                bill.setTotalDebt(totalDebt);
+            List<Orders> orders = orderService.list(ordersQueryWrapper);
+            Bill oldBill = billService.getOne(billQueryWrapper);
+            Bill newBill = new Bill();
+            double orderTotal = 0;
+            double paid = 0;
+            for (Orders orderByCustomerId : orders) {
+                orderTotal += orderByCustomerId.getTotalPrice();
+                paid += orderByCustomerId.getPaid();
             }
-            bill.setUpdateTime(new Date());
-            billService.saveOrUpdate(bill);
+            newBill.setCreateTime(new Date());
+            newBill.setUpdateTime(new Date());
+            newBill.setCustomerId(order.getCustomerId());
+            newBill.setCustomerName(order.getCustomerName());
+            if (oldBill != null) {
+                newBill.setEmptyBottleTotal(oldBill.getEmptyBottleTotal());
+                newBill.setCreateTime(oldBill.getCreateTime());
+            }
+            newBill.setOrderTotal(orderTotal);
+            newBill.setPaid(paid);
+            double orderDebt = orderTotal - paid;
+            newBill.setOrderDebt(orderDebt);
+            double totalDebt = orderDebt + newBill.getEmptyBottleTotal();
+            newBill.setTotalDebt(totalDebt);
+            billService.remove(billQueryWrapper);
+            billService.save(newBill);
             return Result.ok();
         }
         return Result.error();
@@ -347,10 +357,10 @@ public class OrderController {
                     orderExcelDtos.add(orderExcelDto);
                 }
             }
-            String[] consumerTitles = {"订单ID", "订单日期", "客户id", "客户名称", "气瓶id", "气瓶类型", "购买数量", "单价", "订单总数量", "订单总金额"};
+            String[] orderTitles = {"订单单号", "订单日期", "客户id", "客户名称", "气瓶id", "气瓶类型", "购买数量", "单价", "订单总数量", "订单总金额"};
             String[] params = {"id", "createTime", "customerId", "customerName", "gasCylinderId", "gasCylinderName",
                     "price", "quantity", "total", "totalPrice"};
-            workbook = ExcelUtil.createExecl(consumerTitles, params, orderExcelDtos);
+            workbook = ExcelUtil.createExecl(orderTitles, params, orderExcelDtos);
             String fileName = "订单详情报表.xlsx"; // 创建文件名
             String fileNameURL = URLEncoder.encode(fileName, "UTF-8");
             response.setContentType("application/ms-excel;charset=UTF-8"); // 设置ContentType

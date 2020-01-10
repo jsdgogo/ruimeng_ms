@@ -116,10 +116,10 @@ public class BillController {
                 queryWrapper.le("createTime", endDate);
             }
             List<Bill> bills = billService.list(queryWrapper);
-            String[] consumerTitles = {"欠款id", "欠款日期", "客户id", "客户名称", "总欠款", "订单欠款", "订单总金额","已付款金额"};
+            String[] billTitles = {"欠款id", "欠款日期", "客户id", "客户名称", "总欠款", "订单欠款", "订单总金额","已付款金额"};
             String[] params = {"id", "createTime", "customerId", "customerName", "totalDebt", "orderDebt",
                     "orderTotal", "paid"};
-            workbook = ExcelUtil.createExecl(consumerTitles, params, bills);
+            workbook = ExcelUtil.createExecl(billTitles, params, bills);
             String fileName = "欠款详情报表.xlsx"; // 创建文件名
             String fileNameURL = URLEncoder.encode(fileName, "UTF-8");
             response.setContentType("application/ms-excel;charset=UTF-8"); // 设置ContentType
