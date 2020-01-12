@@ -12,4 +12,7 @@ public class OrderDto {
     private String createTimeStr;
     private double paid;
     private double total;
+    private int number;
+    private String updateTime;
+    private double orderDebt; //订单欠款
 }

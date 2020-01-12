@@ -64,6 +64,8 @@ public class CustomerController {
         }
         if(StringUtils.isNotBlank(pageParam.getOrderBy())){
             queryWrapper.orderBy(true,pageParam.isAscOrDesc(),pageParam.getOrderBy());
+        }else {
+            queryWrapper.orderBy(true,false,"createTime");
         }
         Page<Customer> page = new Page<>(pageParam.getIndex(),pageParam.getSize());
         IPage<Customer> customerIPage = customerService.page(page, queryWrapper);

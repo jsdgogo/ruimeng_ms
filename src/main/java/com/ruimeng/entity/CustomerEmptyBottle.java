@@ -30,8 +30,8 @@ public class CustomerEmptyBottle implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private int id;
 
-    @TableField("gasCylinderId")
-    private int gasCylinderId; //气瓶id
+    @TableField("emptyBottleId")
+    private int emptyBottleId; //气瓶id
     @TableField("gasCylinderName")
     private String gasCylinderName;//气瓶名
 
@@ -58,6 +58,8 @@ public class CustomerEmptyBottle implements Serializable {
     private int nowNumber; //未归还数量
 
     private double price; //空瓶单价
+    @TableField("totalPrice")
+    private double totalPrice;//空瓶欠款
 
 
 }

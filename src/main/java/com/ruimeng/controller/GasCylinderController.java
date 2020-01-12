@@ -65,6 +65,8 @@ public class GasCylinderController {
         }
         if (StringUtils.isNotBlank(pageParam.getOrderBy())) {
             queryWrapper.orderBy(true, pageParam.isAscOrDesc(), pageParam.getOrderBy());
+        }else {
+            queryWrapper.orderBy(true,false,"createTime");
         }
         Page<GasCylinder> page = new Page<>(pageParam.getIndex(), pageParam.getSize());
         IPage<GasCylinder> gasCylinderIPage = gasCylinderService.page(page, queryWrapper);

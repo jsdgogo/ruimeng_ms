@@ -67,6 +67,8 @@ public class EmptyBottleController {
         }
         if (StringUtils.isNotBlank(pageParam.getOrderBy())) {
             queryWrapper.orderBy(true, pageParam.isAscOrDesc(), pageParam.getOrderBy());
+        }else {
+            queryWrapper.orderBy(true,false,"createTime");
         }
         Page<EmptyBottle> page = new Page<>(pageParam.getIndex(), pageParam.getSize());
         IPage<EmptyBottle> emptyBottleIPage = emptyBottleService.page(page, queryWrapper);

@@ -52,5 +52,7 @@ public class Orders implements Serializable {
 
     @TableField("updateTime")
     private Date updateTime; //修改时间
+    @TableField("orderDebt")
+    private double orderDebt; //订单欠款
 
 }

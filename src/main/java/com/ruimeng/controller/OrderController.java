@@ -49,13 +49,16 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
     @Autowired
-    private OrderItemService orderItemService;
-    @Autowired
     private CustomerService customerService;
     @Autowired
+    private OrderItemService orderItemService;
+
+    @Autowired
     private GasCylinderService gasCylinderService;
+
     @Autowired
     private BillService billService;
+
 
     @PostMapping("save")
     public Result save(@RequestBody String orderInfo) throws ParseException {
@@ -92,6 +95,7 @@ public class OrderController {
         }
         order.setQuantity(quantity);
         order.setTotalPrice(totalPrice);
+        order.setOrderDebt(totalPrice - order.getPaid());
         if (orderService.save(order)) {
             QueryWrapper<Bill> billQueryWrapper = new QueryWrapper<>();
             billQueryWrapper.eq("customerId", order.getCustomerId());
@@ -208,6 +212,7 @@ public class OrderController {
         }
         order.setQuantity(quantity);
         order.setTotalPrice(totalPrice);
+        order.setOrderDebt(totalPrice - order.getPaid());
         if (orderService.updateById(order)) {
             QueryWrapper<Bill> billQueryWrapper = new QueryWrapper<>();
             billQueryWrapper.eq("customerId", order.getCustomerId());
@@ -259,6 +264,8 @@ public class OrderController {
         }
         if (StringUtils.isNotBlank(pageParam.getOrderBy())) {
             queryWrapper.orderBy(true, pageParam.isAscOrDesc(), pageParam.getOrderBy());
+        }else {
+            queryWrapper.orderBy(true,false,"createTime");
         }
         //创建时间大于等于开始时间
         if (StringUtils.isNotBlank(beginTime)) {
@@ -287,6 +294,7 @@ public class OrderController {
             orderDto.setId(order.getId());
             orderDto.setPaid(order.getPaid());
             orderDto.setTotal(order.getTotalPrice());
+            orderDto.setOrderDebt(order.getOrderDebt());
             Customer customer = customerService.getById(order.getCustomerId());
             CustomerDto customerDto = new CustomerDto();
             if (customer != null) {
@@ -321,11 +329,14 @@ public class OrderController {
     }
 
     @GetMapping("exportOrder")
-    public void exportOrder(String beginTime, String endTime,
+    public void exportOrder(String beginTime, String endTime,String search,
                             HttpServletResponse response) {
         QueryWrapper<Orders> queryWrapper = new QueryWrapper<>();
         Workbook workbook = null;
         try {
+            if (StringUtils.isNotBlank(search)) {
+                queryWrapper.like("search", search);
+            }
             //创建时间大于等于开始时间
             if (StringUtils.isNotBlank(beginTime)) {
                 Date startDate = DateUtil.stringToDate(beginTime);
