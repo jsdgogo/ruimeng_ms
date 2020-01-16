@@ -55,7 +55,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
             }
             User user = getByToken(request);
             if (user == null) {
-                if (request.getServletPath().equals("/order/exportOrder")||request.getServletPath().equals("/bill/exportBill")||request.getServletPath().equals("/customerEmptyBottle/exportCEB")){
+                if ("/order/exportOrder".equals(request.getServletPath())|| "/bill/exportBill".equals(request.getServletPath())|| "/customerEmptyBottle/exportCEB".equals(request.getServletPath())){
                     return true;
                 }
                 Result result = Result.setResult(ResultCodeEnum.NO_USER_ERROR);
@@ -112,8 +112,9 @@ public class InterceptorConfig implements WebMvcConfigurer {
             } catch (IOException e) {
                 log.error("response error", e);
             } finally {
-                if (writer != null)
+                if (writer != null) {
                     writer.close();
+                }
             }
         }
     }

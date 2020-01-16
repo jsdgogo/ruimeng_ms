@@ -1,15 +1,15 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/ms?characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://123.56.222.216:3306/ruimeng?characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
-    password: 123456
+    password: root
 # Hikari是Spring Boot 2.0之后默认整合的数据库连接池，比druid更快的数据库连接池
   # 数据源类型
     type: com.zaxxer.hikari.HikariDataSource
   # 连接池名称，默认HikariPool-1
     hikari:
-      pool-name: GuliHikariPool
+      pool-name: RuiMengHikariPool
   # 最大连接数，小于等于0会被重置为默认值10；大于零小于1会被重置为minimum-idle的值
       maximum-pool-size: 12
   # 连接超时时间:毫秒，小于250毫秒，否则被重置为默认值30秒
