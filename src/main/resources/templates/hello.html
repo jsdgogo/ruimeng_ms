@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>hello</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/style.css}"/>
+    <script type="text/javascript" th:src="@{/static/js/thymeleaf.js}"></script>
+</head>
+<body>
+<button type="button" onclick="testFunction()">点我一下试试</button>
+<div class="showing">
+    <!--    <p th:text="${name}">name</p>-->
+    <!--    <p th:text="'Hello！ ' + ${name} + '!'">hello world</p>-->
+    <!--    <p th:text="|Hello！ ${name}!|">hello world</p>-->
+    <p th:text="${htmlContent}"></p>
+    <p th:utext="${htmlContent}"></p>
+    <p th:text="${staff.name}"></p>
+    <p th:text="${staff.getName()}"></p>
+    <p th:text="${boolean}?'当testBoolean为真的时候，显示本句话，这是用三相表达式做的':''"></p>
+    <p th:text="${boolean}?'真':'假'"></p>
+    <table>
+        <thead>
+        <tr>
+            <th>id</th>
+            <th>姓名</th>
+            <th>年龄</th>
+            <th>工龄</th>
+            <th>工资</th>
+            <th>电话</th>
+            <th>创建时间</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${staffList!=null}" th:each=" staffTest:${staffList}">
+            <td th:text="${staffTest.id}"></td>
+            <td th:text="${staffTest.name}"></td>
+            <td th:text="${staffTest.age}"></td>
+            <td th:text="${staffTest.phone}"></td>
+            <td th:text="${staffTest.salary}"></td>
+            <td th:text="${staffTest.workYears}"></td>
+            <td th:text="${staffTest.createTime}"></td>
+            <td th:text="${#dates.format(staffTest.createTime,'yyyy-MM-dd HH:mm:ss')}"></td>
+        </tr>
+        </tbody>
+    </table>
+    <input name="staffTest" type="radio" th:each="staffTest:${staffList}" th:value="${staffTest.id}"
+           th:checked="${staffTest.id==staff.id}" th:text="${staff.name}"/>
+</div>
+</body>
+</html>
