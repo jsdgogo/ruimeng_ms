@@ -370,7 +370,7 @@ public class OrderController {
             }
             String[] orderTitles = {"订单单号", "订单日期", "客户id", "客户名称", "气瓶id", "气瓶类型", "购买数量", "单价", "订单总数量", "订单总金额"};
             String[] params = {"id", "createTime", "customerId", "customerName", "gasCylinderId", "gasCylinderName",
-                    "price", "quantity", "total", "totalPrice"};
+                    "quantity", "price", "total", "totalPrice"};
             workbook = ExcelUtil.createExecl(orderTitles, params, orderExcelDtos);
             String fileName = "订单详情报表.xlsx"; // 创建文件名
             String fileNameURL = URLEncoder.encode(fileName, "UTF-8");
