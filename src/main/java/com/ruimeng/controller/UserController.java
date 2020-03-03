@@ -98,11 +98,20 @@ public class UserController {
     public Result update(User user,String oldPassword,HttpServletRequest request) {
         User oldUser = getByToken(request);
         if (oldUser != null&&oldUser.getPassword().equals(oldPassword)){
+            if (!StringUtils.isNotBlank(user.getLoginName())){
+                user.setLoginName(oldUser.getLoginName());
+            }
+            if (!StringUtils.isNotBlank(user.getPassword())){
+                user.setPassword(oldUser.getPassword());
+            }
+            if (!StringUtils.isNotBlank(user.getName())){
+                user.setName(oldUser.getName());
+            }
             user.setUpdateTime(new Date());
             userService.updateById(user);
             return Result.ok();
         }
-        return Result.error().message("原密码错误,修改失败");
+        return Result.error().message("旧密码错误,修改失败");
     }
 
 }
